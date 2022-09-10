@@ -1,6 +1,6 @@
 // web-playback.tsx
 
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { SpotifyHttpClient } from '../../http-clients/spotify-http-client/spotify-http-client';
 import {
     AuthCallback,
@@ -18,7 +18,9 @@ export const WebPlayback: React.FC<WebPlaybackProps> = ({ token }) => {
     const [isActive, setActive] = useState(false);
     const [deviceId, setDeviceId] = useState<string | null>(null);
     const [currentTrack, setTrack] = useState({} as WebPlaybackTrack);
-    const spotify = new SpotifyHttpClient(token);
+    const spotify = useMemo(() => {
+        return new SpotifyHttpClient(token)
+    }, [token]);
 
     useEffect(() => {
         if (!deviceId) {
@@ -30,7 +32,7 @@ export const WebPlayback: React.FC<WebPlaybackProps> = ({ token }) => {
             context_uri: 'spotify:artist:77mJc3M7ZT5oOVM7gNdXim',
         });
 
-    }, [deviceId]);
+    }, [deviceId, spotify]);
 
     const onSpotifyWebPlaybackSDKReady = useCallback(() => {
         // @ts-expect-error
@@ -61,7 +63,7 @@ export const WebPlayback: React.FC<WebPlaybackProps> = ({ token }) => {
         });
 
         webPlayer.connect();
-    }, [token])
+    }, [token, spotify])
 
     useEffect(() => {
         document.body.appendChild(

@@ -10,13 +10,15 @@ export const spotifyRedirectUri = 'http://localhost:3000/';
 
 export const spotifyApiBaseUrl = 'https://api.spotify.com/v1/';
 
-const spotifyScope = 'streaming \
-                     user-read-email \
-                     user-read-private \
-                     user-modify-playback-state \
-                     app-remote-control \
-                     user-read-currently-playing \
-                     user-read-playback-state';
+const spotifyScope = [
+    'streaming',
+    'user-read-email',
+    'user-read-private',
+    'user-modify-playback-state',
+    'app-remote-control',
+    'user-read-currently-playing',
+    'user-read-playback-state',
+].join('')
 
 const spotifyState = generateRandomString(16);
 

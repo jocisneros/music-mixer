@@ -27,10 +27,6 @@ export const useAuth = (authorizationCode: string | null) => {
             setExpiresIn(response.data.expires_in);
         })
         .catch((error) => {
-            if (accessToken) {
-                return;
-            }
-
             // // @ts-expect-error
             // window.location = '/';
             console.log(error)

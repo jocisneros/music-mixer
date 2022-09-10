@@ -1,6 +1,6 @@
 // login.tsx
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { spotifyLoginUrl } from '../../common/constants';
 
 export type LoginProps = unknown;
