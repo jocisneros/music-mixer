@@ -18,7 +18,7 @@ const spotifyScope = [
     'app-remote-control',
     'user-read-currently-playing',
     'user-read-playback-state',
-].join('')
+].join(' ')
 
 const spotifyState = generateRandomString(16);
 
