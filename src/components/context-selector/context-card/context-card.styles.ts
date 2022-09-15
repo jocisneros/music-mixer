@@ -1,37 +1,34 @@
-// playlist-card.styles.ts
+// context-card.styles.ts
 
 import React, { useMemo } from "react";
 import { pxToRem } from "../../../common/functions";
 
-type PlaylistCardStyles = {
+type ContextCardStyles = {
     card: (backgroundColor: string) => React.CSSProperties,
-    playlistArt: React.CSSProperties,
-    playlistCredit: React.CSSProperties,
+    contextArt: React.CSSProperties,
+    contextCredit: React.CSSProperties,
 };
 
-type PlaylistCardCreditStyles = {
-    playlistTitleText: React.CSSProperties,
-    playlistOwnerFooter: React.CSSProperties,
-    playlistOwnerText: React.CSSProperties,
+type ContextCardCreditStyles = {
+    contextNameText: React.CSSProperties,
+    contextCreditContainer: React.CSSProperties,
     ownerAvatar: React.CSSProperties,
 };
 
-export const usePlaylistCardCreditStyles = () => {
-    return useMemo((): PlaylistCardCreditStyles => {
+export const useContextCardCreditStyles = () => {
+    return useMemo((): ContextCardCreditStyles => {
         return {
-            playlistTitleText: {
+            contextNameText: {
                 fontWeight: 650,
                 fontSize: pxToRem(19),
                 color: 'white',
                 padding: 0,
                 margin: 0,
             },
-            playlistOwnerFooter: {
+            contextCreditContainer: {
                 display: 'flex',
                 flexDirection: 'row',
                 gap: pxToRem(8),
-            },
-            playlistOwnerText: {
                 fontWeight: 650,
                 fontSize: pxToRem(14),
                 color: 'white',
@@ -45,37 +42,38 @@ export const usePlaylistCardCreditStyles = () => {
     }, []);
 };
 
-export const usePlaylistCardStyles = () => {
-    return useMemo((): PlaylistCardStyles => {
+export const useContextCardStyles = () => {
+    return useMemo((): ContextCardStyles => {
         return {
             card: (backgroundColor: string) => {
                 return {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    width: pxToRem(256),
-                    height: pxToRem(352),
-                    padding: `${pxToRem(16)} ${pxToRem(8)} 0`,
+                    width: pxToRem(250),
+                    height: pxToRem(350),
+                    padding: `${pxToRem(12)} ${pxToRem(8)} 0`,
                     borderRadius: pxToRem(16),
                     boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
-                    backgroundImage: `linear-gradient(${backgroundColor}, #121312 225%)`,
+                    backgroundImage: `linear-gradient(${backgroundColor}, #121312 500%)`,
+                    border: 'none',
                 };
             },
-            playlistArt: {
+            contextArt: {
                 borderRadius: pxToRem(16),
-                height: pxToRem(224),
-                maxWidth: pxToRem(224),
+                height: pxToRem(225),
+                maxWidth: pxToRem(225),
                 objectFit: 'cover',
                 boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
             },
-            playlistCredit: {
+            contextCredit: {
                 display: 'flex',
                 flexDirection: 'column',
                 position: 'absolute',
                 gap: pxToRem(6),
                 padding: `0 ${pxToRem(16)} 0`,
                 margin: 0,
-                bottom: pxToRem(3),
+                bottom: pxToRem(12),
                 width: '100%',
             },
         };
