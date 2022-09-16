@@ -52,7 +52,7 @@ export const useContextCardStyles = () => {
                     alignItems: 'center',
                     width: pxToRem(250),
                     height: pxToRem(350),
-                    padding: `${pxToRem(12)} ${pxToRem(8)} 0`,
+                    padding: `${pxToRem(12)} ${pxToRem(8)}`,
                     borderRadius: pxToRem(16),
                     boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)',
                     backgroundImage: `linear-gradient(${backgroundColor}, #121312 500%)`,
@@ -74,6 +74,7 @@ export const useContextCardStyles = () => {
                 padding: `0 ${pxToRem(16)} 0`,
                 margin: 0,
                 bottom: pxToRem(12),
+                left: 0,
                 width: '100%',
             },
         };

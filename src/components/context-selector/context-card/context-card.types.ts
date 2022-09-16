@@ -2,11 +2,19 @@
 
 import { SpotifyContextInformation, SpotifyContextOwner } from "../context-selector.types";
 
-export type ContextCardProps = {
+export type ContextCardInnerProps = {
     context: SpotifyContextInformation,
     contextOwner: SpotifyContextOwner,
+};
+
+export type ContextCardProps = ContextCardInnerProps & {
     cardColor: string,
     key?: React.Key,
+};
+
+export type DraggableContextCardProps = ContextCardInnerProps & {
+    cardColor: string,
+    index: number,
 };
 
 export interface ContextCardCreditProps {

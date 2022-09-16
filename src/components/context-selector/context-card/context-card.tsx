@@ -1,10 +1,14 @@
 // context-card.tsx
 
 import Card from 'react-bootstrap/Card';
+import CloseButton from 'react-bootstrap/CloseButton';
 import Image from 'react-bootstrap/Image';
 import { useContextCardStyles, useContextCardCreditStyles } from './context-card.styles';
-import { ContextCardProps, ContextCardCreditProps } from "./context-card.types";
+import { ContextCardProps, ContextCardCreditProps, ContextCardInnerProps, DraggableContextCardProps } from "./context-card.types";
 import React, { FC } from 'react';
+import { Draggable } from 'react-beautiful-dnd';
+import { generateRandomString } from '../../../common/functions';
+
 
 const ContextCardCredit: FC<ContextCardCreditProps> = ({ 
     contextName,
@@ -14,7 +18,11 @@ const ContextCardCredit: FC<ContextCardCreditProps> = ({
     const styles = useContextCardCreditStyles();
     return (
         <div style={style}>
-            <p style={styles.contextNameText}>{contextName}</p>
+            <p style={styles.contextNameText}>{
+                contextName.length > 50
+                    ? contextName.slice(0, 43) + '...'
+                    : contextName
+            }</p>
             <div style={styles.contextCreditContainer}>
                 {contextOwner.images && 
                     <Image
@@ -34,18 +42,16 @@ const ContextCardCredit: FC<ContextCardCreditProps> = ({
     );
 }
 
-export const ContextCard: FC<ContextCardProps> = ({
+const ContextCardInner: FC<ContextCardInnerProps> = ({
     context,
     contextOwner,
-    cardColor,
 }) => {
     const styles = useContextCardStyles();
-    const contextArtUrl = context.images[0].url;
-    
+
     return (
-        <Card style={styles.card(cardColor)}>
+        <div style={{display: 'flex', alignContent: 'center'}}>
             <Image
-                src={contextArtUrl}
+                src={context.images[0].url}
                 style={styles.contextArt}
             />
             <ContextCardCredit
@@ -53,6 +59,51 @@ export const ContextCard: FC<ContextCardProps> = ({
                 contextOwner={contextOwner}
                 style={styles.contextCredit}
             />
+        </div>
+    );
+}
+
+export const ContextCard: FC<ContextCardProps> = ({
+    context,
+    contextOwner,
+    cardColor,
+}) => {
+    const styles = useContextCardStyles();
+
+    return (
+        <Card style={styles.card(cardColor)}>
+            <ContextCardInner
+                context={context}
+                contextOwner={contextOwner}
+            />
         </Card>
     );
 };
+
+export const DraggableContextCard: FC<DraggableContextCardProps> = ({
+    context,
+    contextOwner,
+    cardColor,
+    index,
+}) => {
+    const styles = useContextCardStyles();
+    const id = context.id + '-' + index;
+
+    return (
+        <Draggable draggableId={id} key={id} index={index}>
+            {(provided) => (
+                <Card
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    style={{...styles.card(cardColor), ...provided.draggableProps.style}}
+                >
+                    <ContextCardInner
+                        context={context}
+                        contextOwner={contextOwner}
+                    />
+                </Card>
+            )}
+        </Draggable>
+    );
+}
