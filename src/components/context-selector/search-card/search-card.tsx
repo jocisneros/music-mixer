@@ -1,20 +1,18 @@
 // search-card.tsx
 
-import React, {
-    FC,
+import {
     useCallback,
     useMemo,
     useState
 } from 'react';
 import AsyncSelect from 'react-select/async';
-import Card from 'react-bootstrap/Card';
-import Image from 'react-bootstrap/Image';
 import Button from 'react-bootstrap/Button';
 import {
     alterColor,
     brightnessLevel,
     extractProminentColors,
-    levenshteinDistance as levDist
+    levenshteinDistance as levDist,
+    pxToRem
 } from '../../../common/functions';
 import {
     ContextPreviewProps,
@@ -23,23 +21,16 @@ import {
     SearchOption,
     SearchOptionLabelProps,
     SelectedSearchOption,
-    SelectRef
 } from './search-card.types';
-import { ContextCardProps } from '../context-card/context-card.types';
-import {
-    useContextPreviewStyles,
-    useSearchCardStyles,
-    useSearchOptionLabelStyles
-} from './search-card.styles';
+import Spinner from 'react-bootstrap/Spinner';
+import { MixerCard } from '../mixer-card';
 
 
-const ContextPreview: FC<ContextPreviewProps> = ({
+const ContextPreview = ({
     context,
     prominentColors,
     createContextCard,
-}) => {
-    const styles = useContextPreviewStyles();
-
+}: ContextPreviewProps) => {
     const buttonColor = useMemo(() => {
         let buttonColor = '';
         for (let color of prominentColors) {
@@ -63,19 +54,17 @@ const ContextPreview: FC<ContextPreviewProps> = ({
         return buttonColor;
     }, [prominentColors]);
 
-    const onClick = useCallback(async () => {
-        createContextCard(context);
-    }, [createContextCard]);
-
     return (
-        <div style={styles.container}>
-            <Image
+        <div className='flex flex-col items-center gap-2'>
+            <img
                 src={context.images[0].url}
-                style={styles.contextArt}
+                alt={`art for '${context.name}'`}
+                className='object-cover shadow-lg rounded-2xl h-[13.625rem] max-w-[13.625rem]'
             />
             <Button
-                onClick={onClick}
-                style={styles.button(buttonColor)}
+                onClick={async () => createContextCard(context)}
+                bsPrefix='border-none rounded-2xl font-bold text-sm py-2 px-4 text-white'
+                style={{ background: buttonColor }}
             >
                 {`Add ${'owner' in context ? 'Playlist' : 'Album'}`}
             </Button>
@@ -84,89 +73,83 @@ const ContextPreview: FC<ContextPreviewProps> = ({
 };
 
 
-const SearchOptionLabel: FC<SearchOptionLabelProps> = ({
+const SearchOptionLabel = ({
     context
-}) => {
-    const styles = useSearchOptionLabelStyles();
+}: SearchOptionLabelProps) => {
+    const creditText = useMemo(() => {
+        if ('owner' in context) {
+            return 'Playlist • ' + context.owner.display_name;
+        }
+        return 'Album';
+    }, [context])
     return (
-        <div style={styles.container}>
-            <Image
+        <div
+            className='flex flex-row gap-[0.3125rem] h-full w-full items-center overflow-hidden whitespace-nowrap text-ellipsis'
+        >
+            <img
                 src={context.images.at(-1)?.url}
-                style={styles.contextArt}
+                alt={`art for '${context.name}'`}
+                className='h-10 w-10 rounded-xl object-cover'
             />
-            <div style={styles.creditsContainer}>
-                <div>{context.name}</div>
-                <div style={styles.contextOwnerText}>
-                    {
-                        'owner' in context
-                            ? `Playlist • ${context.owner.display_name}`
-                            : 'Album'
-                    }
-                </div>
+            <div className='flex-col text-sm'>
+                {context.name}
+                <div className='text-xs text-slate-400'>{creditText}</div>
             </div>
         </div>
     )
 };
 
 
-export const SearchCard: FC<SearchCardProps> = ({
-    spotifyClient,
+export const SearchCard = ({
+    search,
+    getPlaylist,
+    getUser,
+    getAlbum,
+    getArtist,
     addContextCard,
-}) => {
-    const styles = useSearchCardStyles();
-
+}: SearchCardProps) => {
     const [context, setContext] = useState<SearchContextState | null>(null);
     const [prominentColors, setProminentColors] = useState<string[]>([]);
-    const [selectRef, setSelectRef] = useState<SelectRef | null>(null);
+    const [isLoading, setLoading] = useState(false);
 
-    const loadOptions = useCallback(
+    const loadQueryResults = useCallback(
         async (query: string): Promise<SearchOption[]> => {
-            const result = await spotifyClient.search(
+            const { albums, playlists} = await search(
                 query, ['album', 'playlist'], { limit: 10 }
             );
-
-            let options: SearchOption[] = [];
-
-            if (result.albums) {
-                options = [
-                    ...options,
-                    ...result.albums.items.map(
-                        album => ({ value: album } as SearchOption)
-                    )
-                ];
+            
+            function resultsMap(value: any) {
+                return { value: value } as SearchOption
             }
 
-            if (result.playlists) {
-                options = [
-                    ...options,
-                    ...result.playlists.items.map(
-                        playlist => ({ value: playlist } as SearchOption)
-                    )
-                ];
-            }
+            const albumResults = albums 
+                ? [...albums.items.map(resultsMap)]
+                : [];
+
+            const playlistResults = playlists 
+                ? [...playlists.items.map(resultsMap)]
+                : [];
+
+            const options = albumResults.concat(playlistResults);
             options.sort(
                 (a, b) => levDist(query, a.value.name) - levDist(query, b.value.name)
             );
 
-            return options
-    }, [spotifyClient]);
+            return options;
+    }, [search]);
 
-    const formatOptionLabel = useCallback(
-        (option: SearchOption) => {
-            return <SearchOptionLabel context={option.value} />;
-    }, []);
-
-    const onChange = useCallback(
+    const onSelection = useCallback(
         (selectedOption: SelectedSearchOption) => {
             if (!selectedOption) {
                 setContext(null);
                 return;
             }
+            setLoading(true);
             extractProminentColors(
                 selectedOption.value.images[0].url
             ).then(colors => {
                 setProminentColors(colors);
-
+                setLoading(false);
                 setContext({
                     ...selectedOption.value,
                     cardColor: colors[0],
@@ -175,60 +158,76 @@ export const SearchCard: FC<SearchCardProps> = ({
     }, []);
 
     const createContextCard = useCallback(
-        async (context: SearchContextState) => {
+        async ({ id, cardColor, ...context }: SearchContextState) => {
+            let album: SpotifyApi.SingleAlbumResponse;
+            addContextCard({
+                key: id,
+                cardColor: cardColor,
+                ...(
+                    'owner' in context
+                    ? { 
+                        context: await getPlaylist(id), 
+                        contextOwner: await getUser(context.owner.id)
+                    }
+                    : {
+                        context: album = await getAlbum(id),
+                        contextOwner: await getArtist(album.artists[0].id)
+                    }
+                )
+            });
+    }, [addContextCard, getAlbum, getArtist, getPlaylist, getUser]);
 
-            let contextCard: ContextCardProps;
-
-            if ('owner' in context) {
-                const playlist = await spotifyClient.getPlaylist(context.id);
-                const user = await spotifyClient.getUser(context.owner.id);
-
-                contextCard = {
-                    context: playlist,
-                    contextOwner: user,
-                    key: context.id,
-                    cardColor: context.cardColor,
-                };
-            } 
-            else {
-                const album = await spotifyClient.getAlbum(context.id);
-                const artist = await spotifyClient.getArtist(
-                    album.artists[0].id
-                );
-
-                contextCard = {
-                    context: album,
-                    contextOwner: artist,
-                    key: context.id,
-                    cardColor: context.cardColor,
-                };
-            }
-
-            selectRef?.clearValue();
-            addContextCard(contextCard);
-    }, [addContextCard, spotifyClient, selectRef]);
-
-    return (
-        <Card style={styles.card}>
-            { context && 
+    const contextPreviewLoader = useMemo(() => {
+        if (context) {
+            return (
                 <ContextPreview
                     context={context}
                     createContextCard={createContextCard}
                     prominentColors={prominentColors}
                 />
-            }
-            <div style={styles.selectContainer}>
+            );
+        }
+        if (isLoading) {
+            return <Spinner animation={'border'} variant='light'/>;
+        }
+    }, [context, isLoading, prominentColors, createContextCard])
+
+    return (
+        <MixerCard>
+            {contextPreviewLoader}
+            <div className='flex items-center h-full'>
                 <AsyncSelect
-                    formatOptionLabel={formatOptionLabel}
-                    ref={ref => setSelectRef(ref)}
-                    loadOptions={loadOptions}
+                    formatOptionLabel={option => (
+                        <SearchOptionLabel context={option.value} />
+                    )}
+                    loadOptions={loadQueryResults}
                     escapeClearsValue
                     placeholder={'Search...'}
-                    styles={styles.select}
-                    onChange={onChange}
-                    isLoading={false}
+                    styles={{
+                        control: () => ({
+                            display: 'flex',
+                            flexDirection: 'row',
+                            width: pxToRem(200),
+                            maxWidth: pxToRem(200),
+                            border: 'none',
+                            borderRadius: pxToRem(16),
+                            background: '#ffffff',
+                        }),
+                        valueContainer: (provided, state) => ({
+                            ...provided,
+                            padding: pxToRem(5),
+                        }),
+                        option: (provided, state) => ({
+                            ...provided,
+                            padding: `0 ${pxToRem(5)} 0`,
+                            display: 'flex',
+                            height: pxToRem(50),
+                            alignItems: 'center',
+                        })
+                    }}
+                    onChange={onSelection}
                 />
             </div>
-        </Card>
+        </MixerCard>
     );
 };

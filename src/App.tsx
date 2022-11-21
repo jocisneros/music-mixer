@@ -1,20 +1,46 @@
 // App.tsx
 
-import { Login } from './components/login/login';
-import { WebPlayback } from './components/web-playback/web-playback';
-import { useAuth } from './hooks/useAuth';
+import { useMemo, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { ContextSelector } from './components/context-selector/context-selector';
-
-const authorizationCode = new URLSearchParams(window.location.search).get('code');
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { MusicMixer } from './MusicMixer';
+import { CallbackPage, LoginPage } from './pages/pages';
 
 function App() {
-	const token = useAuth(authorizationCode);
+	const [accessToken, setAccessToken] = useState('');
+	const [refreshToken, setRefreshToken] = useState('');
+	const [expiresIn, setExpiresIn] = useState(0);
+	const isLoggedIn = useMemo(() => {
+		return accessToken.length > 0;
+	}, [accessToken]);
+	const redirectTo = useNavigate();
 
 	return (
-		<div style={{ justifyContent: 'center', display: 'flex', marginTop: '1rem'}}>
-			{!token ? <Login /> : <ContextSelector accessToken={token} />}
-			{/* {!token ? <Login /> : <WebPlayback token={token} />} */}
+		<div className='flex p-0 m-0 h-screen items-center justify-center bg-[#1f1f1f]'>
+			<Routes>					
+				<Route
+					path='/callback' element={
+						<CallbackPage
+							setAccessToken={setAccessToken}
+							setRefreshToken={setRefreshToken}
+							setExpiresIn={setExpiresIn}
+							redirectTo={redirectTo}
+						/>
+					}
+				/>
+				<Route path='/login' element={<LoginPage />}/>
+				<Route path='/*' element={
+					!isLoggedIn
+					? <Navigate to='/login'/>
+					: (
+						<MusicMixer
+							accessToken={accessToken}
+							refreshToken={refreshToken}
+							expiresIn={expiresIn}
+						/>
+					)
+				}/>
+			</Routes>
 		</div>
   	)
 }

@@ -1,109 +1,124 @@
 // context-card.tsx
 
-import Card from 'react-bootstrap/Card';
-import CloseButton from 'react-bootstrap/CloseButton';
-import Image from 'react-bootstrap/Image';
-import { useContextCardStyles, useContextCardCreditStyles } from './context-card.styles';
-import { ContextCardProps, ContextCardCreditProps, ContextCardInnerProps, DraggableContextCardProps } from "./context-card.types";
-import React, { FC } from 'react';
+import { useMemo, useState } from 'react';
+import { ContextCardProps, DraggableContextCardProps } from './context-card.types';
 import { Draggable } from 'react-beautiful-dnd';
-import { generateRandomString } from '../../../common/functions';
+import { MixerCard } from '../mixer-card';
+import { Button } from 'react-bootstrap';
 
 
-const ContextCardCredit: FC<ContextCardCreditProps> = ({ 
-    contextName,
-    contextOwner,
-    style,
-}) => {
-    const styles = useContextCardCreditStyles();
-    return (
-        <div style={style}>
-            <p style={styles.contextNameText}>{
-                contextName.length > 50
-                    ? contextName.slice(0, 43) + '...'
-                    : contextName
-            }</p>
-            <div style={styles.contextCreditContainer}>
-                {contextOwner.images && 
-                    <Image
-                        src={contextOwner.images[0].url}
-                        roundedCircle
-                        style={styles.ownerAvatar}
-                    />
-                }
-                <div>
-                    {contextOwner.type === 'user'
-                        ? contextOwner.display_name
-                        : contextOwner.name
-                    }
-                </div>
-            </div>
-        </div>
-    );
-}
-
-const ContextCardInner: FC<ContextCardInnerProps> = ({
-    context,
-    contextOwner,
-}) => {
-    const styles = useContextCardStyles();
-
-    return (
-        <div style={{display: 'flex', alignContent: 'center'}}>
-            <Image
-                src={context.images[0].url}
-                style={styles.contextArt}
-            />
-            <ContextCardCredit
-                contextName={context.name}
-                contextOwner={contextOwner}
-                style={styles.contextCredit}
-            />
-        </div>
-    );
-}
-
-export const ContextCard: FC<ContextCardProps> = ({
+export const ContextCard = ({
     context,
     contextOwner,
     cardColor,
-}) => {
-    const styles = useContextCardStyles();
+}: ContextCardProps) => {
+    const [showModal, setShowModal] = useState(false);
+    
+    const contextName = useMemo(() => {
+        if (context.name.length > 50) {
+            return context.name.slice(0, 43) + '...';
+        }
+
+        return context.name;
+    }, [context]);
+    
+    const contextOwnerName = useMemo(() => {
+        if (contextOwner.type === 'user') {
+            return contextOwner.display_name;
+        }
+        return contextOwner.name;
+    }, [contextOwner]);
+
+    const contextOwnerImage = useMemo(() => {
+        if (contextOwner.images && contextOwner.images?.length !== 0) {
+            return (
+                <img
+                    src={contextOwner.images[0].url}
+                    alt={`spotify profile of '${contextOwnerName}'`}
+                    className='h-[1.5rem] p-0 m-0 rounded-full'
+                />
+            );
+        }
+        return;
+    }, [contextOwner, contextOwnerName])
+
+    const modal = useMemo(() => {
+        if (!showModal) {
+            return;
+        }
+        return (
+            <div className='absolute h-full w-full bg-black/80 z-20 top-0 rounded-2xl'>
+                <div className='flex flex-col items-center gap-2 h-full justify-center'>
+                    <Button
+                        bsPrefix='border-none rounded-2xl bg-red-500 font-bold text-white text-sm py-2 px-4'
+                    >
+                        {'Remove Card'}
+                    </Button>
+                    <Button
+                        bsPrefix='border-none rounded-2xl bg-white font-bold text-xs py-2 px-3'
+                        onClick={() => setShowModal(false)}
+                    >
+                        {'Close'}
+                    </Button>
+                </div>
+            </div>
+        )
+    }, [showModal])
 
     return (
-        <Card style={styles.card(cardColor)}>
-            <ContextCardInner
-                context={context}
-                contextOwner={contextOwner}
+        <MixerCard gradient color={cardColor}>
+            {modal}
+            <img
+                src={context.images[0].url}
+                alt={`art for '${context.name}'`}
+                className='rounded-2xl h-[14.0625rem] max-w-[14.0625rem] object-cover shadow'
+                onClick={() => {setShowModal(true)}}
             />
-        </Card>
+            <div
+                className='absolute left-0 bottom-[0.75rem] gap-[0.375rem] px-3 py-0 m-0 w-full'
+            >
+                <p className='font-bold text-lg text-white p-0 m-0'>
+                    {contextName}
+                </p>
+                <div
+                    className='flex items-center flex-row gap-[0.5rem] font-semibold text-white text-sm'
+                >
+                    {contextOwnerImage}
+                    {contextOwnerName}
+                </div>
+            </div>
+        </MixerCard>
     );
 };
 
-export const DraggableContextCard: FC<DraggableContextCardProps> = ({
+
+export const DraggableContextCard = ({
     context,
     contextOwner,
     cardColor,
     index,
-}) => {
-    const styles = useContextCardStyles();
+}: DraggableContextCardProps) => {
     const id = context.id + '-' + index;
 
     return (
         <Draggable draggableId={id} key={id} index={index}>
             {(provided) => (
-                <Card
+                <div
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
-                    style={{...styles.card(cardColor), ...provided.draggableProps.style}}
+                    className='flex items-center'
                 >
-                    <ContextCardInner
+                    <ContextCard
                         context={context}
                         contextOwner={contextOwner}
+                        cardColor={cardColor}
                     />
-                </Card>
+                    {/* <div>
+                        <CloseButton style={{ padding: 10 }}/>
+                    </div> */}
+                </div>
             )}
         </Draggable>
     );
-}
+};

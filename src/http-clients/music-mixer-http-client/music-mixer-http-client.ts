@@ -1,6 +1,6 @@
 // music-mixer-http-clients.ts
 
-import axios from "axios";
+import axios from 'axios';
 import { 
     AuthorizationCode, 
     RefreshToken, 
@@ -8,7 +8,7 @@ import {
     SpotifyRefreshTokenResponse
 } from './music-mixer-http-client.types';
 
-export class MusicMixerHttpClient {    
+export class MusicMixerHttpClient {
     async getSpotifyAccessToken(authorizationCode: string): Promise<SpotifyAccessTokenResponse> {
         const response = await axios.post<AuthorizationCode, SpotifyAccessTokenResponse>(
             '/login', { authorizationCode: authorizationCode }

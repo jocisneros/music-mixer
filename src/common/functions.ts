@@ -1,6 +1,6 @@
 // functions.ts
 
-import { prominent } from "color.js";
+import { prominent } from 'color.js';
 
 export function generateRandomString(length: number): string {
     let text = '';

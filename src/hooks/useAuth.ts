@@ -1,7 +1,8 @@
 // useAuth.ts
 
-import { useEffect, useMemo, useState } from "react";
-import { MusicMixerHttpClient } from "../http-clients/music-mixer-http-client/music-mixer-http-client";
+import { useEffect, useMemo, useState } from 'react';
+import { MusicMixerHttpClient } from '../http-clients/music-mixer-http-client/music-mixer-http-client';
+
 
 export const useAuth = (authorizationCode: string | null) => {
     const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -20,7 +21,7 @@ export const useAuth = (authorizationCode: string | null) => {
         .getSpotifyAccessToken(authorizationCode)
         .then((response) => {
             // @ts-expect-error
-            window.history.pushState({}, null, "/");
+            window.history.pushState({}, null, '/');
 
             setAccessToken(response.data.access_token);
             setRefreshToken(response.data.refresh_token);
@@ -49,7 +50,7 @@ export const useAuth = (authorizationCode: string | null) => {
             .catch(() => {
                 // @ts-expect-error
                 window.location = '/';
-                console.log("ERROR")
+                console.log('ERROR')
             });
 
         }, (expiresIn - 60) * 1000 );

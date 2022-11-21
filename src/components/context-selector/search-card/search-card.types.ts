@@ -1,14 +1,50 @@
 // search-card.types.ts
 
-import { GroupBase, SingleValue, StylesConfig } from "react-select";
-import Select from "react-select/dist/declarations/src/Select";
-import { SpotifyHttpClient } from "../../../http-clients/spotify-http-client/spotify-http-client";
-import { ContextCardProps } from "../context-card/context-card.types";
-import { SpotifyContextInformation } from "../context-selector.types";
+import { GroupBase, SingleValue, StylesConfig } from 'react-select';
+import Select from 'react-select/dist/declarations/src/Select';
+import { SpotifyHttpClient } from '../../../http-clients/spotify-http-client/spotify-http-client';
+import { ContextCardProps } from '../context-card/context-card.types';
+import { SpotifyContextInformation } from '../context-selector.types';
+
+export type funtions = {
+    search: (
+        query: string,
+        types: ('album' | 'artist' | 'playlist' | 'track')[],
+        options?: SpotifyApi.SearchForItemParameterObject,
+    ) => Promise<SpotifyApi.SearchResponse>,
+    getPlaylist: (
+        playlistId: string,
+    ) => Promise<SpotifyApi.SinglePlaylistResponse>,
+    getUser: (
+        userId: string,
+    ) => Promise<SpotifyApi.UserProfileResponse>,
+    getAlbum: (
+        albumId: string,
+    ) => Promise<SpotifyApi.SingleAlbumResponse>,
+    getArtist: (
+        artistId: string,
+    ) => Promise<SpotifyApi.SingleArtistResponse>;
+};
 
 export type SearchCardProps = {
-    spotifyClient: SpotifyHttpClient,
     addContextCard: (props: ContextCardProps) => void,
+    search: (
+        query: string,
+        types: ('album' | 'artist' | 'playlist' | 'track')[],
+        options?: SpotifyApi.SearchForItemParameterObject,
+    ) => Promise<SpotifyApi.SearchResponse>,
+    getPlaylist: (
+        playlistId: string,
+    ) => Promise<SpotifyApi.SinglePlaylistResponse>,
+    getUser: (
+        userId: string,
+    ) => Promise<SpotifyApi.UserProfileResponse>,
+    getAlbum: (
+        albumId: string,
+    ) => Promise<SpotifyApi.SingleAlbumResponse>,
+    getArtist: (
+        artistId: string,
+    ) => Promise<SpotifyApi.SingleArtistResponse>,
 };
 
 export type SearchOptionLabelProps = {

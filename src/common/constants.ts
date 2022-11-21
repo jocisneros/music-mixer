@@ -6,7 +6,7 @@ export const spotifyBaseUrl = 'https://accounts.spotify.com/';
 
 export const spotifyClientId = '7b502c7721ea449ca620b12c09a5ba43';
 
-export const spotifyRedirectUri = 'http://localhost:3000/';
+export const spotifyRedirectUri = 'http://localhost:3000/callback';
 
 export const spotifyApiBaseUrl = 'https://api.spotify.com/v1/';
 

@@ -1,6 +1,6 @@
 // music-mixer-http-client.types.ts
 
-import { AxiosResponse } from "axios"
+import { AxiosResponse } from 'axios'
 
 type SpotifyTokenResponseInner = {
     access_token: string,

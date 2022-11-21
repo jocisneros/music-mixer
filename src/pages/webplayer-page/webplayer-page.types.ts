@@ -1,7 +1,15 @@
-// web-playback.types.ts
+// webplayer-page.types.ts
 
-export type WebPlaybackProps = {
+export type WebPlayerPageProps = {
+    context?: null,
     token: string,
+    play: (options?: SpotifyApi.PlayParameterObject) => Promise<void>;
+    pause: () => Promise<void>,
+    skipToNext: () => Promise<void>,
+    skipToPrevious: () => Promise<void>,
+    getMyCurrentPlaybackState: (
+        options?: SpotifyApi.TrackRelinkingParameterObject
+    ) => Promise<SpotifyApi.CurrentPlaybackResponse>,
 };
 
 export type AuthCallback = (token: string) => void;

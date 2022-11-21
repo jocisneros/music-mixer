@@ -1,38 +1,41 @@
-// web-playback.tsx
+// webplayer-page.tsx
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { SpotifyHttpClient } from '../../http-clients/spotify-http-client/spotify-http-client';
+import { useCallback, useEffect, useState } from 'react';
+import Button from 'react-bootstrap/Button';
 import {
     AuthCallback,
     EventType,
     WebPlaybackPlayer,
-    WebPlaybackProps,
     WebPlaybackState,
     WebPlaybackTrack,
+    WebPlayerPageProps,
     WebPlayer
-} from './web-playback.types'
+} from './webplayer-page.types'
 
-
-export const WebPlayback: React.FC<WebPlaybackProps> = ({ token }) => {
+export const WebPlayerPage = ({
+    token,
+    play,
+    pause,
+    skipToNext,
+    skipToPrevious,
+    getMyCurrentPlaybackState
+}: WebPlayerPageProps) => {
     const [isPaused, setPaused] = useState(false);
     const [isActive, setActive] = useState(false);
     const [deviceId, setDeviceId] = useState<string | null>(null);
     const [currentTrack, setTrack] = useState({} as WebPlaybackTrack);
-    const spotify = useMemo(() => {
-        return new SpotifyHttpClient(token)
-    }, [token]);
 
     useEffect(() => {
         if (!deviceId) {
             return;
         }
 
-        spotify.play({
+        play({
             device_id: deviceId,
             context_uri: 'spotify:artist:77mJc3M7ZT5oOVM7gNdXim',
         });
 
-    }, [deviceId, spotify]);
+    }, [deviceId, play]);
 
     const onSpotifyWebPlaybackSDKReady = useCallback(() => {
         // @ts-expect-error
@@ -57,13 +60,13 @@ export const WebPlayback: React.FC<WebPlaybackProps> = ({ token }) => {
 
             setTrack(state.track_window.current_track);
             setPaused(state.paused);
-            spotify.getMyCurrentPlaybackState().then((state) => {
+            getMyCurrentPlaybackState().then((state) => {
                 setActive(state.device?.is_active);
             });
         });
 
         webPlayer.connect();
-    }, [token, spotify])
+    }, [token, getMyCurrentPlaybackState])
 
     useEffect(() => {
         document.body.appendChild(
@@ -89,23 +92,24 @@ export const WebPlayback: React.FC<WebPlaybackProps> = ({ token }) => {
         );
     } else {
         return (
-            <div className="main-wrapper">
-                <img src={currentTrack.album.images[0].url} className="now-playing__cover" alt="" />
-                <div className="now-playing__side">
-                    <div className="now-playing__name">{currentTrack.name}</div>
-                    <div className="now-playing__artist">{currentTrack.artists[0].name}</div>
-
-                    <button className="btn-spotify" onClick={async () => { await spotify.skipToPrevious() }} >
-                        &lt;&lt;
-                    </button>
-
-                    <button className="btn-spotify" onClick={async () => { isPaused ? spotify.play() : spotify.pause() }} >
-                        { isPaused ? "PLAY" : "PAUSE" }
-                    </button>
-
-                    <button className="btn-spotify" onClick={async () => { await spotify.skipToNext() }} >
-                        &gt;&gt;
-                    </button>
+            <div className='flex flex-col gap-2 items-center'>
+                <img
+                    src={currentTrack.album.images[0].url}
+                    className='rounded-2xl'
+                    alt={`album art for '${currentTrack.name}'`}
+                />
+                <div className='flex flex-row gap-2 w-[500px] items-center justify-center'>
+                    <div className='flex-col'>
+                        <div className='text-white font-lg'>{currentTrack.name}</div>
+                        <div className='now-playing__artist'>{currentTrack.artists[0].name}</div>
+                    </div>
+                    <div>
+                        <Button onClick={async () => { await skipToPrevious() }}>{'<<'}</Button>
+                        <Button onClick={async () => { await (isPaused ? play() : pause()) }}>
+                            { isPaused ? '▶' : 'Pause'}
+                        </Button>
+                        <Button onClick={async () => { await skipToNext() }}>{'>>'}</Button>
+                    </div>
                 </div>
             </div>
         );
