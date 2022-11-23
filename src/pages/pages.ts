@@ -2,4 +2,5 @@
 
 export * from './callback-page';
 export * from './login-page';
-export * from './webplayer-page/webplayer-page';
+export * from './webplayer-page';
+export * from './main-page';

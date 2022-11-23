@@ -84,7 +84,7 @@ const SearchOptionLabel = ({
     }, [context])
     return (
         <div
-            className='flex flex-row gap-[0.3125rem] h-full w-full items-center overflow-hidden whitespace-nowrap text-ellipsis'
+            className='flex flex-row gap-2 h-full w-full items-center overflow-hidden whitespace-nowrap text-ellipsis'
         >
             <img
                 src={context.images.at(-1)?.url}
@@ -188,14 +188,18 @@ export const SearchCard = ({
             );
         }
         if (isLoading) {
-            return <Spinner animation={'border'} variant='light'/>;
+            return (
+                <div className='flex justify-center items-center h-full'>
+                    <Spinner animation={'border'} variant='light'/>
+                </div>
+            );
         }
     }, [context, isLoading, prominentColors, createContextCard])
 
     return (
         <MixerCard>
-            {contextPreviewLoader}
-            <div className='flex items-center h-full'>
+            <div className='flex flex-col items-center justify-center gap-2 h-full w-full'>
+                {contextPreviewLoader}
                 <AsyncSelect
                     formatOptionLabel={option => (
                         <SearchOptionLabel context={option.value} />

@@ -1,37 +1,30 @@
 // context-selector.tsx
 
 import { useCallback, useMemo, useState } from 'react';
-import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
-import { reorder } from '../../common/functions';
-import { DraggableContextCard } from './context-card/context-card';
-import { ContextCardProps } from './context-card/context-card.types';
-import { ContextSelectorProps } from './context-selector.types';
-import { SearchCard } from './search-card/search-card';
+import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+import { DraggableContextCard } from '../../components/cards/context-card/context-card';
+import { SelectionPageProps } from './selection-page.types';
+import { SearchCard } from '../../components/cards/search-card/search-card';
 import Button from 'react-bootstrap/Button';
 import { CiSearch } from 'react-icons/ci';
+import { MixerCard } from '../../components/cards/mixer-card';
+import { ContextCardProps } from '../../components/cards/context-card/context-card.types';
 
-export const ContextSelector = ({
+export const SelectionPage = ({
     redirectTo,
+    cards,
+    addToContextCards,
+    onDragEnd,
+    removeFromContextCards,
     ...spotifyFunctions
-}: ContextSelectorProps) => {
-    const [contextOptions, setContextOptions] = useState<ContextCardProps[]>([]);
+}: SelectionPageProps) => {
     const [showSearchCard, setShowSearchCard] = useState(false);
 
-    const addContextCard = useCallback((props: ContextCardProps) => {
-        setContextOptions(options => [
-            ...options, 
-            {...props, key: `${props.key}-${options.length}`}
-        ]);
-        setShowSearchCard(false);
-    }, []);
-
-    const onDragEnd = ({ destination, source }: DropResult) => {
-        if (!destination) {
-            return;
-        }
-
-        setContextOptions(items => reorder(items, source.index, destination.index));
-    }
+    const addContextCard = useCallback(
+        (props: ContextCardProps) => {
+            addToContextCards(props);
+            setShowSearchCard(false);
+    }, [addToContextCards])
 
     const searchCardView = useMemo(() => {
         if (showSearchCard) {
@@ -43,17 +36,19 @@ export const ContextSelector = ({
             );
         } else {
             return (
-                <div className='flex justify-center items-center w-[15.625rem] h-[21.875rem]'>
+                <MixerCard>
+                    <div className='flex items-center justify-center h-full w-full'>
                     <Button
                         onClick={() => setShowSearchCard(true)}
-                        bsPrefix='flex justify-center items-center border-none w-[65px] h-[65px] rounded-full bg-white/[0.5]'
+                        bsPrefix='flex justify-center items-center border-none w-[65px] h-[65px] rounded-full bg-white/[0.5] hover:bg-white/[0.35]'
                     >
                         <CiSearch className='text-4xl stroke-1'/>
                     </Button>
-                </div>
+                    </div>
+                </MixerCard>
             );
         }
-    }, [showSearchCard, addContextCard, spotifyFunctions]);
+    }, [showSearchCard, addToContextCards, spotifyFunctions]);
 
     return (
         <div className='flex flex-col items-center'>
@@ -68,10 +63,13 @@ export const ContextSelector = ({
                                     ref={provided.innerRef}
                                     className='flex flex-row gap-4 h-full w-full items-center overflow-x-auto p-4'
                                 >
-                                    {contextOptions.map((props, index) => (
+                                    {cards.map((props, index) => (
                                         <DraggableContextCard
                                             {...props}
                                             index={index}
+                                            removeCard={
+                                                () => props.key && removeFromContextCards(props.key)
+                                            }
                                         />
                                     ))}
                                     {provided.placeholder}
@@ -81,9 +79,6 @@ export const ContextSelector = ({
                     </div>
                 </DragDropContext>
             </div>
-            <Button onClick={() => redirectTo('/player')}>
-                {'Play'}
-            </Button>
         </div>
     );
 }

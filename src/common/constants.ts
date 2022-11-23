@@ -4,7 +4,7 @@ import { generateRandomString } from './functions'
 
 export const spotifyBaseUrl = 'https://accounts.spotify.com/';
 
-export const spotifyClientId = '7b502c7721ea449ca620b12c09a5ba43';
+export const spotifyClientId = 'dec041e315f943d3bddba5b4a360ce2e';
 
 export const spotifyRedirectUri = 'http://localhost:3000/callback';
 

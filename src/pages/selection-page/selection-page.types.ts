@@ -1,7 +1,15 @@
 // context-selector.types.ts
 
-export type ContextSelectorProps = {
+import React from "react";
+import { DropResult, ResponderProvided } from "react-beautiful-dnd";
+import { ContextCardProps } from "../../components/cards/context-card/context-card.types";
+
+export type SelectionPageProps = {
     redirectTo: (to: string) => void,
+    cards: ContextCardProps[],
+    addToContextCards: (props: ContextCardProps) => void,
+    onDragEnd: (result: DropResult, provided: ResponderProvided) => void,
+    removeFromContextCards: (key: React.Key) => void,
     search: (
         query: string,
         types: ('album' | 'artist' | 'playlist' | 'track')[],
@@ -20,8 +28,3 @@ export type ContextSelectorProps = {
         artistId: string,
     ) => Promise<SpotifyApi.SingleArtistResponse>,
 };
-
-
-export type SpotifyContextInformation = SpotifyApi.SinglePlaylistResponse | SpotifyApi.SingleAlbumResponse;
-
-export type SpotifyContextOwner = SpotifyApi.UserProfileResponse | SpotifyApi.SingleArtistResponse;

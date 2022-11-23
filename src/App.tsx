@@ -16,7 +16,7 @@ function App() {
 	const redirectTo = useNavigate();
 
 	return (
-		<div className='flex p-0 m-0 h-screen items-center justify-center bg-[#1f1f1f]'>
+		<div className='flex p-0 m-0 h-screen w-screen items-center justify-center bg-[#1f1f1f]'>
 			<Routes>					
 				<Route
 					path='/callback' element={

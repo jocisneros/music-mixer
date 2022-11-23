@@ -11,6 +11,8 @@ export const ContextCard = ({
     context,
     contextOwner,
     cardColor,
+    removeCard,
+    key,
 }: ContextCardProps) => {
     const [showModal, setShowModal] = useState(false);
     
@@ -50,6 +52,7 @@ export const ContextCard = ({
             <div className='absolute h-full w-full bg-black/80 z-20 top-0 rounded-2xl'>
                 <div className='flex flex-col items-center gap-2 h-full justify-center'>
                     <Button
+                        onClick={() => removeCard && removeCard()}
                         bsPrefix='border-none rounded-2xl bg-red-500 font-bold text-white text-sm py-2 px-4'
                     >
                         {'Remove Card'}
@@ -97,6 +100,7 @@ export const DraggableContextCard = ({
     contextOwner,
     cardColor,
     index,
+    removeCard,
 }: DraggableContextCardProps) => {
     const id = context.id + '-' + index;
 
@@ -113,10 +117,8 @@ export const DraggableContextCard = ({
                         context={context}
                         contextOwner={contextOwner}
                         cardColor={cardColor}
+                        removeCard={removeCard}
                     />
-                    {/* <div>
-                        <CloseButton style={{ padding: 10 }}/>
-                    </div> */}
                 </div>
             )}
         </Draggable>

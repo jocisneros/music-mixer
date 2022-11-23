@@ -2,9 +2,8 @@
 
 import { GroupBase, SingleValue, StylesConfig } from 'react-select';
 import Select from 'react-select/dist/declarations/src/Select';
-import { SpotifyHttpClient } from '../../../http-clients/spotify-http-client/spotify-http-client';
+import { SpotifyContextInformation } from '../../../MusicMixer.types';
 import { ContextCardProps } from '../context-card/context-card.types';
-import { SpotifyContextInformation } from '../context-selector.types';
 
 export type funtions = {
     search: (

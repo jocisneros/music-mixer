@@ -2,14 +2,14 @@
 
 import Button from 'react-bootstrap/Button';
 import { spotifyLoginUrl } from '../common/constants';
-import logo from '../logo.svg'
+import MusicMixerLogo from '../logo.svg'
 
 export const LoginPage = () => {
     return (
         <div className='flex flex-col items-center gap-[3rem]'>
             <div className='flex flex-row items-center gap-[1rem]'>
                 <img
-                    src={logo}
+                    src={MusicMixerLogo}
                     alt='music mixer logo'
                     className='w-20'
                 />
