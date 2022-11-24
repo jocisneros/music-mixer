@@ -1,6 +1,9 @@
 // MusicMixer.types.ts
 
-export type SpotifyContextInformation = SpotifyApi.SinglePlaylistResponse | SpotifyApi.SingleAlbumResponse;
+export type SpotifyContextInformation = SpotifyApi.SinglePlaylistResponse
+                                        | SpotifyApi.SingleAlbumResponse
+                                        | SpotifyApi.AlbumObjectSimplified
+                                        | SpotifyApi.PlaylistObjectSimplified;
 
 export type SpotifyContextOwner = SpotifyApi.UserProfileResponse | SpotifyApi.SingleArtistResponse;
 

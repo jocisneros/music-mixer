@@ -16,7 +16,7 @@ export const MainPage = ({
 }: MainPageProps) => {
     const buttonStyling = 'absolute top-0 rounded-2xl flex flex-col gap-2 justify-center items-center h-full w-full enabled:text-white font-semibold tracking-wide hover:bg-black/20 disabled:bg-black/50 disabled:text-gray-400'
     return (
-        <div className='flex flex-row gap-8'>
+        <div className='flex flex-row flex-wrap gap-8 h-screen w-screen items-center justify-center'>
             <MixerCard color='#4dc98b'>
                 <Button
                     disabled={contextCards.length === 0}

@@ -1,28 +1,55 @@
 // context-card.tsx
 
 import { useMemo, useState } from 'react';
-import { ContextCardProps, DraggableContextCardProps } from './context-card.types';
+import { ContextCardProps, ContextPreviewCardProps, DraggableContextCardProps, DraggableContextPreviewCardProps } from './context-card.types';
 import { Draggable } from 'react-beautiful-dnd';
-import { MixerCard } from '../mixer-card';
+import { MixerCard, MixerPreviewCard } from '../mixer-card';
 import { Button } from 'react-bootstrap';
 
+export const ContextPreviewCard = ({
+    context,
+    cardColor,
+}: ContextPreviewCardProps) => {
+    const ownerName = useMemo(() => {
+        if ('artists' in context) {
+            return context.artists[0].name;
+        }
+
+        if ('owner' in context) {
+            return context.owner.display_name;
+        }
+    }, [context]);
+
+    const tag = useMemo(() => {
+        if ('album_type' in context) {
+            return context.album_type;
+        } else {
+            return 'playlist';
+        }
+    }, [context]);
+    return (
+        <MixerPreviewCard color={cardColor + '50'}>
+            <p className='m-0 text-center w-full px-2 truncate h-24 text-white'>{ownerName}</p>
+            <img
+                src={context.images[0].url}
+                alt={`art for '${context.name}'`}
+                className='w-full max-h-[8.5714rem] min-h-[8.5714rem] object-cover'
+            />
+            <div className='flex flex-col gap-2 h-full w-full items-center justify-center'>
+                <p className='m-0 text-white pb-4 px-2 text-center w-full truncate'>{context.name}</p>
+                <p className='absolute bottom-0 bg-white/10 rounded-b-2xl text-center w-full m-0 text-white tracking-wide'>{tag}</p>
+            </div>
+        </MixerPreviewCard>
+    )
+}
 
 export const ContextCard = ({
     context,
     contextOwner,
     cardColor,
     removeCard,
-    key,
 }: ContextCardProps) => {
     const [showModal, setShowModal] = useState(false);
-    
-    const contextName = useMemo(() => {
-        if (context.name.length > 50) {
-            return context.name.slice(0, 43) + '...';
-        }
-
-        return context.name;
-    }, [context]);
     
     const contextOwnerName = useMemo(() => {
         if (contextOwner.type === 'user') {
@@ -49,7 +76,7 @@ export const ContextCard = ({
             return;
         }
         return (
-            <div className='absolute h-full w-full bg-black/80 z-20 top-0 rounded-2xl'>
+            <div className='absolute h-full w-full bg-black/80 z-20 top-0 rounded-[.935rem]'>
                 <div className='flex flex-col items-center gap-2 h-full justify-center'>
                     <Button
                         onClick={() => removeCard && removeCard()}
@@ -66,25 +93,23 @@ export const ContextCard = ({
                 </div>
             </div>
         )
-    }, [showModal])
+    }, [showModal, removeCard])
 
     return (
-        <MixerCard gradient color={cardColor}>
+        <MixerCard gradient color={cardColor + 'D0'}>
             {modal}
             <img
                 src={context.images[0].url}
                 alt={`art for '${context.name}'`}
-                className='rounded-2xl h-[14.0625rem] max-w-[14.0625rem] object-cover shadow'
+                className='h-full w-full object-cover'
                 onClick={() => {setShowModal(true)}}
             />
-            <div
-                className='absolute left-0 bottom-[0.75rem] gap-[0.375rem] px-3 py-0 m-0 w-full'
-            >
-                <p className='font-bold text-lg text-white p-0 m-0'>
-                    {contextName}
+            <div className='flex flex-col items-center justify-start w-full px-[1rem] pt-3'>
+                <p className='font-bold text-lg text-white m-0 w-full truncate'>
+                    {context.name}
                 </p>
                 <div
-                    className='flex items-center flex-row gap-[0.5rem] font-semibold text-white text-sm'
+                    className='flex items-center flex-row gap-[0.5rem] font-semibold text-white text-sm w-full'
                 >
                     {contextOwnerImage}
                     {contextOwnerName}
@@ -118,6 +143,34 @@ export const DraggableContextCard = ({
                         contextOwner={contextOwner}
                         cardColor={cardColor}
                         removeCard={removeCard}
+                    />
+                </div>
+            )}
+        </Draggable>
+    );
+};
+
+export const DraggableContextPreviewCard = ({
+    context,
+    contextOwner,
+    cardColor,
+    index,
+}: DraggableContextPreviewCardProps) => {
+    const id = context.id + '-' + index;
+
+    return (
+        <Draggable draggableId={id} key={id} index={index}>
+            {(provided) => (
+                <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    className='flex items-center'
+                >
+                    <ContextPreviewCard
+                        context={context}
+                        contextOwner={contextOwner}
+                        cardColor={cardColor}
                     />
                 </div>
             )}

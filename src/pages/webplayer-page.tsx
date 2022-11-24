@@ -34,7 +34,7 @@ const WebPlayerPageInner = ({
     const playedTracks = useMemo(() => new Map<string, Set<string>>(), []);
 
     const playerCardContainerStyle = (
-        'flex flex-col gap-2 items-center rounded-3xl justify-center w-96 h-[32rem] bg-black/20 shadow'
+        'flex flex-col gap-2 items-center rounded-3xl justify-center w-96 h-[34rem] bg-black/20 shadow'
     );
     const playerControlButtonStyle = (
         'flex items-center justify-center rounded-full bg-white/10 text-white text-[2.25rem] w-[3rem] h-[3rem] shadow hover:bg-white/5'
@@ -157,24 +157,26 @@ const WebPlayerPageInner = ({
                 
             }}
         >
-            <div
-                className='flex flex-row gap-2 rounded-3xl items-center justify-center h-20 px-4 shadow'
-                style={{ background: currentContext?.cardColor + '30' }}
-            >
-                <div className='flex flex-col'>
-                    <div className='tracking-wide text-white text-xs'>{'now playing'}</div>
-                    <p className='font-semibold text-white truncate m-0 w-72'>{currentContext?.context.name}</p>
+            { currentContext &&
+                <div
+                    className='flex flex-row gap-3 rounded-3xl items-center justify-center h-20 w-96 px-4 shadow'
+                    style={{ background: currentContext.cardColor + '30' }}
+                >
+                    <div className='flex flex-col w-full'>
+                        <div className='tracking-wide text-white text-xs'>{'now playing'}</div>
+                        <p className='font-semibold text-white truncate m-0 w-[17rem]'>{currentContext.context.name}</p>
+                    </div>
+                    <img
+                        className='object-cover rounded-xl w-14 h-14'
+                        alt={`art for '${currentContext.context.name}'`}
+                        src={currentContext.context.images[0].url}
+                    />
                 </div>
-                <img
-                    className='rounded-xl w-10'
-                    alt={`art for '${currentContext?.context.name}'`}
-                    src={currentContext?.context.images[0].url}
-                />
-            </div>
+            }
             <div className={playerCardContainerStyle}>
                 <img
                     src={currentTrack.album.images[0].url}
-                    className='rounded-3xl w-80'
+                    className='w-full pt-1'
                     alt={`album art for '${currentTrack.name}'`}
                 />
                 <div className='flex flex-col items-center justify-center w-80'>

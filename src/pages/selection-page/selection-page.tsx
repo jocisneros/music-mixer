@@ -1,14 +1,14 @@
 // context-selector.tsx
 
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
-import { DraggableContextCard } from '../../components/cards/context-card/context-card';
+import { DraggableContextCard, DraggableContextPreviewCard } from '../../components/cards/context-card/context-card';
 import { SelectionPageProps } from './selection-page.types';
-import { SearchCard } from '../../components/cards/search-card/search-card';
-import Button from 'react-bootstrap/Button';
 import { CiSearch } from 'react-icons/ci';
-import { MixerCard } from '../../components/cards/mixer-card';
-import { ContextCardProps } from '../../components/cards/context-card/context-card.types';
+import { ContextPreviewCardProps } from '../../components/cards/context-card/context-card.types';
+import Form from 'react-bootstrap/Form';
+import { extractProminentColors } from '../../common/functions';
+import Spinner from 'react-bootstrap/Spinner';
 
 export const SelectionPage = ({
     redirectTo,
@@ -18,67 +18,149 @@ export const SelectionPage = ({
     removeFromContextCards,
     ...spotifyFunctions
 }: SelectionPageProps) => {
-    const [showSearchCard, setShowSearchCard] = useState(false);
+    const searchRef = useRef<HTMLInputElement>(null);
 
-    const addContextCard = useCallback(
-        (props: ContextCardProps) => {
-            addToContextCards(props);
-            setShowSearchCard(false);
-    }, [addToContextCards])
+    const [isLoading, setLoading] = useState(false);
+    const [contextPreviewCards, setContextPreviewCards] = useState<ContextPreviewCardProps[]>([]);
 
-    const searchCardView = useMemo(() => {
-        if (showSearchCard) {
+    const getSearchResults = useCallback(async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchRef.current === null) {
+            return;
+        }
+        setLoading(true);
+        const { albums, playlists } = await spotifyFunctions.search(
+            searchRef.current.value, ['album', 'playlist'], { limit: 10 }
+        );
+
+        const contextPreviewCards: ContextPreviewCardProps[] = [];
+
+        for (let i = 0; albums && i < albums.items.length; i++) {
+            const cardColor = (await extractProminentColors(albums.items[i].images[0].url))[0];
+            const contextOwner = await spotifyFunctions.getArtist(albums.items[i].artists[0].id);
+
+            contextPreviewCards.push({
+                key: albums.items[i].id,
+                context: albums.items[i],
+                contextOwner: contextOwner,
+                cardColor: cardColor,
+            });
+        }
+
+        for (let i = 0; playlists && i < playlists.items.length; i++) {
+            const cardColor = (await extractProminentColors(playlists.items[i].images[0].url))[0];
+            const contextOwner = await spotifyFunctions.getUser(playlists.items[i].owner.id);
+
+            contextPreviewCards.push({
+                key: playlists.items[i].id,
+                context: playlists.items[i],
+                contextOwner: contextOwner,
+                cardColor: cardColor
+            });
+        }
+
+        setContextPreviewCards(contextPreviewCards);
+        setLoading(false);
+        console.log(albums, playlists)
+
+    }, [spotifyFunctions]);
+
+    const previewResultsLoader = useMemo(() => {
+        if (!isLoading && (!contextPreviewCards || contextPreviewCards.length === 0)) {
+            return <div className='h-64 w-[96vw]' />
+        }
+
+        if (isLoading) {
             return (
-                <SearchCard
-                    {...spotifyFunctions}
-                    addContextCard={addContextCard}
-                />
-            );
-        } else {
-            return (
-                <MixerCard>
-                    <div className='flex items-center justify-center h-full w-full'>
-                    <Button
-                        onClick={() => setShowSearchCard(true)}
-                        bsPrefix='flex justify-center items-center border-none w-[65px] h-[65px] rounded-full bg-white/[0.5] hover:bg-white/[0.35]'
-                    >
-                        <CiSearch className='text-4xl stroke-1'/>
-                    </Button>
+                <div>
+                    <div className='flex flex-col gap-2 h-64 w-[96vw] items-center justify-center bg-black/20 rounded-2xl'>
+                        <Spinner animation={'border'} variant='light'/>
+                        <p className='m-0 text-center text-white'>{'loading results...'}</p>
                     </div>
-                </MixerCard>
+                </div>
+            )
+        }
+
+        if (contextPreviewCards) {
+            return (
+                <div>
+                    {/* <p className='m-0 text-white'>{'results'}</p> */}
+                    <Droppable droppableId='queryDeck' direction='horizontal'>
+                        {(provided) => (
+                            <div
+                                {...provided.droppableProps}
+                                ref={provided.innerRef}
+                                className='flex flex-row gap-4 h-64 w-[96vw] items-center bg-black/20 rounded-2xl snap-mandatory snap-x overflow-x-auto px-4'
+                            >
+                                {contextPreviewCards && contextPreviewCards.map((props, index) => (
+                                    <DraggableContextPreviewCard
+                                        {...props}
+                                        index={index}
+                                    />
+                                ))}
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </Droppable>
+                </div>
             );
         }
-    }, [showSearchCard, addToContextCards, spotifyFunctions]);
+    }, [isLoading, contextPreviewCards])
+
+    const contextDeck = useMemo(() => {
+        return (
+            <div>
+                {/* <p className='m-0 text-white'>{'results'}</p> */}
+                <Droppable droppableId='contextDeck' direction='horizontal'>
+                    {(provided) => (
+                        <div
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                            className='flex flex-row gap-4 h-96 w-[96vw] items-center bg-black/20 rounded-2xl snap-mandatory snap-x overflow-x-auto px-4'
+                        >
+                            {
+                                cards.length === 0
+                                ? <p
+                                    className='m-0 text-center w-full text-white'
+                                  >
+                                    {'search and drag cards here to play!'}
+                                  </p>
+                                : cards.map((props, index) => (
+                                    <DraggableContextCard
+                                        {...props}
+                                        index={index}
+                                        removeCard={
+                                            () => props.key && removeFromContextCards(props.key)
+                                        }
+                                    />
+                                ))
+                            }
+                            {provided.placeholder}
+                        </div>
+                    )}
+                </Droppable>
+            </div>
+        )
+    }, [cards, removeFromContextCards])
 
     return (
-        <div className='flex flex-col items-center'>
-            <div className='flex flex-row flex-1 items-center'>
-                <div className='p-4'>{searchCardView}</div>
-                <DragDropContext onDragEnd={onDragEnd}>
-                    <div className='w-4/5'>
-                        <Droppable droppableId='contextOptions' direction='horizontal'>
-                            {(provided) => (
-                                <div
-                                    {...provided.droppableProps}
-                                    ref={provided.innerRef}
-                                    className='flex flex-row gap-4 h-full w-full items-center overflow-x-auto p-4'
-                                >
-                                    {cards.map((props, index) => (
-                                        <DraggableContextCard
-                                            {...props}
-                                            index={index}
-                                            removeCard={
-                                                () => props.key && removeFromContextCards(props.key)
-                                            }
-                                        />
-                                    ))}
-                                    {provided.placeholder}
-                                </div>
-                            )}
-                        </Droppable>
+        <div className='flex flex-col gap-16 items-center justify-center h-screen w-screen'>
+            <DragDropContext onDragEnd={onDragEnd(contextPreviewCards)}>
+                <div className='flex flex-col items-center justify-center gap-4'>
+                    <div className='flex flex-row items-center justify-center'>
+                        <Form className='flex' onSubmit={getSearchResults}>
+                            <CiSearch className='bg-white rounded-l-full py-2 pl-4 border-none text-5xl'/>
+                            <Form.Control
+                                ref={searchRef}
+                                bsPrefix='rounded-r-full w-96 py-2 px-4 border-none'
+                                placeholder={'what do you want to listen to?'}
+                            />
+                        </Form>
                     </div>
-                </DragDropContext>
-            </div>
+                    {previewResultsLoader}
+                </div>
+                {contextDeck}
+            </DragDropContext>
         </div>
     );
 }

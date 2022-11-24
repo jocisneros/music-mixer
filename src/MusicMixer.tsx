@@ -8,7 +8,7 @@ import { SpotifyHttpClient } from './http-clients/spotify-http-client/spotify-ht
 import MusicMixerLogo from './logo.svg'
 import { Button } from 'react-bootstrap';
 import { BiArrowBack } from 'react-icons/bi'
-import { ContextCardProps } from './components/cards/context-card/context-card.types';
+import { ContextCardProps, ContextPreviewCardProps } from './components/cards/context-card/context-card.types';
 import { DropResult } from 'react-beautiful-dnd';
 import { reorder } from './common/functions';
 
@@ -51,39 +51,96 @@ export const MusicMixer = ({
         }
     , []);
 
-    const onDragEnd = ({ destination, source }: DropResult) => {
-        if (!destination) {
-            return;
+    const onDragEnd = useCallback((
+        previewCards: ContextPreviewCardProps[]
+    ) => {
+        return ({ destination, source }: DropResult) => {
+            if (!destination || destination.droppableId !== 'contextDeck') {
+                return;
+            }
+
+            if (source.droppableId === 'contextDeck') {
+                setContextCards(items => reorder(items, source.index, destination.index));
+                return;
+            }
+
+            if (source.droppableId === 'queryDeck') {
+                setContextCards(prevCards => {
+                    prevCards.splice(
+                        destination.index,
+                        0,
+                        previewCards[source.index]
+                    )
+                    return prevCards;
+                });
+                return;
+            }
+        };
+    }, []);
+    
+    // const onDragEnd = useCallback((
+    //     previewCards: ContextPreviewCardProps[]
+    // ) => {
+    //     return async ({ destination, source }: DropResult) => {
+    //         if (!destination || destination.droppableId !== 'contextDeck') {
+    //             return;
+    //         }
+
+    //         if (source.droppableId === 'contextDeck') {
+    //             setContextCards(items => reorder(items, source.index, destination.index));
+    //             return;
+    //         }
+
+    //         if (source.droppableId === 'queryDeck') {
+    //             const previewCard = previewCards[source.index];
+
+    //             const contextOwner = 'artists' in previewCard.context
+    //                                  ? await spotifyClient.getArtist(previewCard.context.artists[0].id)
+    //                                  : await spotifyClient.getUser(previewCard.context.owner.id);
+
+    //             setContextCards(prevCards => {
+    //                 prevCards.splice(
+    //                     destination.index,
+    //                     0,
+    //                     {
+    //                         ...previewCard,
+    //                         contextOwner: contextOwner
+    //                     }
+    //                 )
+    //                 return prevCards;
+    //             });
+    //             return;
+    //         }
+    //     };
+    // }, [spotifyClient]);
+
+    const backButton = useMemo(() => {
+        if (location.pathname === '/') {
+            return <div className='w-16'></div>;
         }
 
-        setContextCards(items => reorder(items, source.index, destination.index));
-    };
+        return (
+            <Button
+                onClick={() => redirectTo('/')}
+                bsPrefix='flex justify-center items-center gap-2 font-semibold text-white tracking-wide'
+            >
+                <BiArrowBack />
+                {'back'}
+            </Button>
+        )
+    }, [location.pathname, redirectTo]);
     
     return (
-        <div>
-            <div className='absolute top-4 left-4 flex flex-col items-center'>
-                <div className='flex items-center justify-center'>
-                    <img
-                        src={MusicMixerLogo}
-                        alt='music mixer logo'
-                        className='w-10'
-                    />
-                    <div
-                        className='text-white font-semibold text-2xl tracking-wide'
-                    >
+        <div className='flex flex-col h-screen w-screen items-center justify-center'>
+            <div className='flex flex-row w-screen justify-between pt-2 pb-2'>
+                <div className='flex pl-4'>{backButton}</div>
+                <div className='flex justify-center items-center'>
+                    <img className='w-10' src={MusicMixerLogo} alt='music mixer logo' />
+                    <div className='text-white font-semibold text-2xl tracking-wide'>
                         {'music mixer'}
                     </div>
                 </div>
-                {
-                    location.pathname !== '/' &&
-                    <Button
-                        onClick={() => redirectTo('/')}
-                        bsPrefix='absolute justify-center items-center gap-2 left-2 top-16 flex font-semibold text-white'
-                    >
-                        <BiArrowBack />
-                        {'Back'}
-                    </Button>
-                }
+                <div className='w-20'></div>
             </div>
             <Routes>
                 <Route
