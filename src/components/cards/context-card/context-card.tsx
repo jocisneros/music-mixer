@@ -1,7 +1,12 @@
 // context-card.tsx
 
 import { useMemo, useState } from 'react';
-import { ContextCardProps, ContextPreviewCardProps, DraggableContextCardProps, DraggableContextPreviewCardProps } from './context-card.types';
+import {
+    ContextCardProps,
+    ContextPreviewCardProps,
+    DraggableContextCardProps,
+    DraggableContextPreviewCardProps
+} from './context-card.types';
 import { Draggable } from 'react-beautiful-dnd';
 import { MixerCard, MixerPreviewCard } from '../mixer-card';
 import { Button } from 'react-bootstrap';
@@ -37,11 +42,11 @@ export const ContextPreviewCard = ({
             />
             <div className='flex flex-col gap-2 h-full w-full items-center justify-center'>
                 <p className='m-0 text-white pb-4 px-2 text-center w-full truncate'>{context.name}</p>
-                <p className='absolute bottom-0 bg-white/10 rounded-b-2xl text-center w-full m-0 text-white tracking-wide'>{tag}</p>
+                <p className='absolute bottom-0 bg-white/10 rounded-b-2xl text-center w-full truncate m-0 text-white tracking-wide'>{tag}</p>
             </div>
         </MixerPreviewCard>
     )
-}
+};
 
 export const ContextCard = ({
     context,
@@ -112,7 +117,7 @@ export const ContextCard = ({
                     className='flex items-center flex-row gap-[0.5rem] font-semibold text-white text-sm w-full'
                 >
                     {contextOwnerImage}
-                    {contextOwnerName}
+                    <p className='truncate m-0'>{contextOwnerName}</p>
                 </div>
             </div>
         </MixerCard>

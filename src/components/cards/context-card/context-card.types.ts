@@ -7,10 +7,6 @@ export type BaseContextCardProps = Context & {
     key?: React.Key,
 };
 
-// export type ContextPreviewCardProps = Omit<
-//     BaseContextCardProps,
-//     'contextOwner'
-// >;
 export type ContextPreviewCardProps = BaseContextCardProps;
 
 export type ContextCardProps = BaseContextCardProps & {

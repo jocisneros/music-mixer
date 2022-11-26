@@ -3,11 +3,15 @@
 import express from 'express';
 import request from 'request';
 import {
-    spotifyBaseUrl,
-    spotifyClientId,
-    spotifyClientSecret,
-    spotifyRedirectUri,
-} from '../common';
+    SPOTIFY_BASE_URL,
+    SPOTIFY_REDIRECT_URI,
+} from '../src/common/common';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const AUTH_HEADER = 'Basic ' + Buffer.from(
+    `${process.env.REACT_APP_SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+).toString('base64');
 
 const port = 6000;
 
@@ -19,18 +23,14 @@ app.post('/login', (req, res) => {
 
     request.post(
         {
-            url: spotifyBaseUrl + 'api/token',
+            url: SPOTIFY_BASE_URL + 'api/token',
             form: {
                 grant_type: 'authorization_code',
                 code: authorizationCode,
-                redirect_uri: spotifyRedirectUri,
+                redirect_uri: SPOTIFY_REDIRECT_URI,
             },
             headers: {
-                Authorization: 'Basic ' + (
-                    Buffer.from(
-                        `${spotifyClientId}:${spotifyClientSecret}`
-                    ).toString('base64')
-                ),
+                Authorization: AUTH_HEADER,
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
         },
@@ -45,17 +45,13 @@ app.post('/refresh', (req, res) => {
 
     request.post(
         {
-            url: spotifyBaseUrl + 'api/token',
+            url: SPOTIFY_BASE_URL + 'api/token',
             form: {
                 grant_type: 'refresh_token',
                 refresh_token: refreshToken,
             },
             headers: {
-                Authorization: 'Basic ' + (
-                    Buffer.from(
-                        `${spotifyClientId}:${spotifyClientSecret}`
-                    ).toString('base64')
-                ),
+                Authorization: AUTH_HEADER,
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
         },

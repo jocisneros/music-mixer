@@ -6,7 +6,7 @@ export type MixerCardProps = {
     color?: string,
     gradient?: boolean,
     children: React.ReactNode,
-}
+};
 
 export const MixerPreviewCard = ({
     color,

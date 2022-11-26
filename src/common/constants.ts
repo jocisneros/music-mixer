@@ -1,16 +1,10 @@
 // constants.ts
 
-import { generateRandomString } from './functions'
+export const SPOTIFY_BASE_URL = 'https://accounts.spotify.com/';
 
-export const spotifyBaseUrl = 'https://accounts.spotify.com/';
+export const SPOTIFY_REDIRECT_URI = 'http://localhost:3000/callback';
 
-export const spotifyClientId = 'dec041e315f943d3bddba5b4a360ce2e';
-
-export const spotifyRedirectUri = 'http://localhost:3000/callback';
-
-export const spotifyApiBaseUrl = 'https://api.spotify.com/v1/';
-
-const spotifyScope = [
+const SPOTIFY_SCOPE = [
     'streaming',
     'user-read-email',
     'user-read-private',
@@ -18,16 +12,13 @@ const spotifyScope = [
     'app-remote-control',
     'user-read-currently-playing',
     'user-read-playback-state',
-].join(' ')
-
-const spotifyState = generateRandomString(16);
+].join(' ');
 
 const spotifyQueryParameters = new URLSearchParams({
     'response_type': 'code',
-    'client_id': spotifyClientId,
-    'scope': spotifyScope,
-    'redirect_uri': spotifyRedirectUri,
-    'state': spotifyState,
+    'client_id': process.env.REACT_APP_SPOTIFY_CLIENT_ID,
+    'scope': SPOTIFY_SCOPE,
+    'redirect_uri': SPOTIFY_REDIRECT_URI
 } as Record<string, string>);
 
-export const spotifyLoginUrl = `${spotifyBaseUrl}authorize?${spotifyQueryParameters.toString()}`;
+export const SPOTIFY_AUTH_URL = `${SPOTIFY_BASE_URL}authorize?${spotifyQueryParameters.toString()}`;

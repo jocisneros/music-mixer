@@ -1,8 +1,8 @@
 // callback-page.tsx
 
-import { useMemo, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { MusicMixerHttpClient } from '../http-clients/music-mixer-http-client/music-mixer-http-client';
+import { MusicMixerHttpClient } from '../music-mixer-http-client';
 
 type CallbackPageProps = {
     setAccessToken: (token: string) => void,
@@ -18,14 +18,13 @@ export const CallbackPage = ({
 	redirectTo
 }: CallbackPageProps) => {
 	const [searchParams,] = useSearchParams();
-	const musicMixerHttpClient = useMemo(() => new MusicMixerHttpClient(), [])
 
 	useEffect(() => {
 	  if (!searchParams.has('code')) {
 		return;
 	  }
 
-	  musicMixerHttpClient
+	  MusicMixerHttpClient
 	  .getSpotifyAccessToken(searchParams.get('code')!)
 	  .then((response) => {
 		setAccessToken(response.data.access_token);
@@ -37,7 +36,7 @@ export const CallbackPage = ({
 	  .catch((error) => {
 		console.log(error)
 	  })
-	}, [musicMixerHttpClient, searchParams, setAccessToken, setRefreshToken, setExpiresIn, redirectTo])
+	}, [searchParams, setAccessToken, setRefreshToken, setExpiresIn, redirectTo])
     
 	return <></>
 };

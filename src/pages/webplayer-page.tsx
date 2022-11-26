@@ -1,12 +1,19 @@
 // webplayer-page.tsx
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    WebPlaybackSDK,
+    usePlayerDevice,
+    usePlaybackState,
+    useSpotifyPlayer,
+    useWebPlaybackSDKReady
+} from 'react-spotify-web-playback-sdk';
+
 import Button from 'react-bootstrap/Button';
-import { WebPlaybackSDK, usePlayerDevice, usePlaybackState, useSpotifyPlayer, useWebPlaybackSDKReady } from "react-spotify-web-playback-sdk";
 import Spinner from 'react-bootstrap/Spinner';
 import { BsFillPlayFill, BsPauseFill, BsFillSkipStartFill, BsFillSkipEndFill } from 'react-icons/bs'
-import { ContextCardProps } from '../components/cards/context-card/context-card.types';
-import { extractProminentColors } from '../common/functions';
+import { ContextCardProps } from '../components/components';
+import { extractProminentColors } from '../common/common';
 
 type WebPlayerPageInnerProps = {
     contextCards: ContextCardProps[],

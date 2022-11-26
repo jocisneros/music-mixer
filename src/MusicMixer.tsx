@@ -1,16 +1,18 @@
 // MusicMixer.tsx
 
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { SelectionPage } from './pages/selection-page/selection-page';
-import { MainPage, WebPlayerPage } from './pages/pages';
 import React, { useCallback, useMemo, useState } from 'react';
-import { SpotifyHttpClient } from './http-clients/spotify-http-client/spotify-http-client';
-import MusicMixerLogo from './logo.svg'
-import { Button } from 'react-bootstrap';
-import { BiArrowBack } from 'react-icons/bi'
-import { ContextCardProps, ContextPreviewCardProps } from './components/cards/context-card/context-card.types';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { DropResult } from 'react-beautiful-dnd';
-import { reorder } from './common/functions';
+
+import { MainPage, SelectionPage, WebPlayerPage } from './pages/pages';
+import { ContextCardProps, ContextPreviewCardProps } from './components/components';
+import { useSpotifyClient } from './hooks/useSpotifyClient';
+
+import Button from 'react-bootstrap/Button';
+import { BiArrowBack } from 'react-icons/bi'
+import { reorder } from './common/common';
+import MusicMixerLogo from './logo.svg';
+
 
 type MusicMixerProps = {
     accessToken: string,
@@ -18,7 +20,6 @@ type MusicMixerProps = {
     expiresIn: number,
 };
 
-// TODO: Update token when expired
 export const MusicMixer = ({
     accessToken,
     refreshToken,
@@ -26,30 +27,20 @@ export const MusicMixer = ({
 }: MusicMixerProps) => {
     const [contextCards, setContextCards] = useState<ContextCardProps[]>([])
     const location = useLocation();
-
-    const spotifyClient = useMemo(
-        () => new SpotifyHttpClient(accessToken)
-    , [accessToken]);
-    
-    const redirectTo = useNavigate();
-
-    const addToContextCards = useCallback(
-      (props: ContextCardProps) => {
-        setContextCards(cards => [
-            ...cards,
-            {...props, key: `${props.key}-${cards.length}`}
-        ]);
-      },
-      [],
+    const spotify = useSpotifyClient(
+        accessToken,
+        refreshToken,
+        expiresIn
     );
+
+    const redirectTo = useNavigate();
 
     const removeFromContextCards = useCallback(
         (key: React.Key) => {
             setContextCards(prevCards => prevCards.filter(
                 cardProps => cardProps.key !== key
             ));
-        }
-    , []);
+    }, []);
 
     const onDragEnd = useCallback((
         previewCards: ContextPreviewCardProps[]
@@ -69,7 +60,10 @@ export const MusicMixer = ({
                     prevCards.splice(
                         destination.index,
                         0,
-                        previewCards[source.index]
+                        {
+                            key: `${previewCards[source.index].key}-${prevCards.length + 1}`,
+                            ...previewCards[source.index]
+                        }
                     )
                     return prevCards;
                 });
@@ -77,42 +71,6 @@ export const MusicMixer = ({
             }
         };
     }, []);
-    
-    // const onDragEnd = useCallback((
-    //     previewCards: ContextPreviewCardProps[]
-    // ) => {
-    //     return async ({ destination, source }: DropResult) => {
-    //         if (!destination || destination.droppableId !== 'contextDeck') {
-    //             return;
-    //         }
-
-    //         if (source.droppableId === 'contextDeck') {
-    //             setContextCards(items => reorder(items, source.index, destination.index));
-    //             return;
-    //         }
-
-    //         if (source.droppableId === 'queryDeck') {
-    //             const previewCard = previewCards[source.index];
-
-    //             const contextOwner = 'artists' in previewCard.context
-    //                                  ? await spotifyClient.getArtist(previewCard.context.artists[0].id)
-    //                                  : await spotifyClient.getUser(previewCard.context.owner.id);
-
-    //             setContextCards(prevCards => {
-    //                 prevCards.splice(
-    //                     destination.index,
-    //                     0,
-    //                     {
-    //                         ...previewCard,
-    //                         contextOwner: contextOwner
-    //                     }
-    //                 )
-    //                 return prevCards;
-    //             });
-    //             return;
-    //         }
-    //     };
-    // }, [spotifyClient]);
 
     const backButton = useMemo(() => {
         if (location.pathname === '/') {
@@ -151,16 +109,13 @@ export const MusicMixer = ({
                     path='select'
                     element={
                         <SelectionPage
-                            cards={contextCards}  
-                            addToContextCards={addToContextCards}
+                            contextCards={contextCards}
                             removeFromContextCards={removeFromContextCards}
                             onDragEnd={onDragEnd}
                             redirectTo={redirectTo}
-                            search={spotifyClient.search}
-                            getPlaylist={spotifyClient.getPlaylist}
-                            getUser={spotifyClient.getUser}
-                            getAlbum={spotifyClient.getAlbum}
-                            getArtist={spotifyClient.getArtist}
+                            search={spotify.search}
+                            getUser={spotify.getUser}
+                            getArtist={spotify.getArtist}
                         />
                     }
                 />
@@ -170,8 +125,8 @@ export const MusicMixer = ({
                         <WebPlayerPage
                             contextCards={contextCards}
                             token={accessToken}
-                            play={spotifyClient.play}
-                            shuffle={async () => await spotifyClient.setShuffle(true)} 
+                            play={spotify.play}
+                            shuffle={async () => await spotify.setShuffle(true)} 
                         />
                     }
                 />
