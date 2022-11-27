@@ -14,7 +14,7 @@ import {
     DropResult
 } from 'react-beautiful-dnd';
 import { CiSearch } from 'react-icons/ci';
-import { extractProminentColors } from '../common/functions';
+import { extractProminentColors } from '../common';
 import {
     ContextCardProps,
     ContextPreviewCardProps,
@@ -25,9 +25,8 @@ import {
 type SelectionPageProps = {
     contextCards: ContextCardProps[],
     redirectTo: (to: string) => void,
-    onDragEnd: (previewCards: ContextPreviewCardProps[]) => (
-        drop: DropResult
-    ) => void,
+    reorderContextCards: (startIndex: number, finalIndex: number) => void,
+    insertContextCard: (contextCard: ContextCardProps, index?: number) => void,
     removeFromContextCards: (key: React.Key) => void,
     search: (
         query: string,
@@ -45,7 +44,8 @@ type SelectionPageProps = {
 export const SelectionPage = ({
     contextCards,
     redirectTo,
-    onDragEnd,
+    reorderContextCards,
+    insertContextCard,
     removeFromContextCards,
     search,
     getUser,
@@ -70,6 +70,7 @@ export const SelectionPage = ({
 
         for (let i = 0; albums && i < albums.items.length; i++) {
             const cardColor = (await extractProminentColors(albums.items[i].images[0].url))[0];
+            // @ts-ignore
             const contextOwner = await getArtist(albums.items[i].artists[0].id);
 
             contextPreviewCards.push({
@@ -93,106 +94,113 @@ export const SelectionPage = ({
         }
 
         setContextPreviewCards(contextPreviewCards);
+        // await new Promise(f => setTimeout(f, 10000));
         setLoading(false);
-        console.log(albums, playlists)
 
     }, [getArtist, getUser, search]);
 
-    const previewResultsLoader = useMemo(() => {
-        if (!isLoading && (!contextPreviewCards || contextPreviewCards.length === 0)) {
-            return <div className='h-64 w-[80vw]' />
-        }
-
+    const resultsDeck = useMemo(() => {
         if (isLoading) {
             return (
-                <div>
-                    <div className='flex flex-col shadow-2xl shadow-[#42424220] gap-2 h-64 w-[80vw] items-center justify-center bg-black/20 rounded-2xl'>
-                        <Spinner animation={'border'} variant='light'/>
-                        <p className='m-0 text-center text-white'>{'loading results...'}</p>
-                    </div>
-                </div>
-            )
-        }
-
-        if (contextPreviewCards) {
-            return (
-                <div>
-                    <Droppable droppableId='queryDeck' direction='horizontal'>
-                        {(provided) => (
-                            <div
-                                className='flex flex-row shadow-2xl shadow-[#42424220] gap-4 h-64 w-[80vw] items-center bg-black/20 rounded-2xl snap-mandatory snap-x overflow-x-auto px-4'
-                                ref={provided.innerRef}
-                                {...provided.droppableProps}
-                            >
-                                {contextPreviewCards && contextPreviewCards.map((props, index) => (
-                                    <DraggableContextPreviewCard
-                                        {...props}
-                                        index={index}
-                                    />
-                                ))}
-                                {provided.placeholder}
-                            </div>
-                        )}
-                    </Droppable>
+                <div className='flex flex-col items-center w-full'>
+                    <Spinner animation={'border'} variant='light'/>
+                    <p className='m-0 text-center text-white'>{'loading results...'}</p>
                 </div>
             );
+        } else if (contextPreviewCards) {
+            return contextPreviewCards.map((props, index) => (
+                <DraggableContextPreviewCard
+                    {...props}
+                    index={index}
+                />
+            ));
         }
-    }, [isLoading, contextPreviewCards])
+    }, [contextPreviewCards, isLoading]);
 
     const contextDeck = useMemo(() => {
-        return (
-            <div>
+        if (contextCards.length === 0) {
+            return (
+                <p
+                    className='m-0 text-center font-bold text-xl w-full text-[#5c5c5c] tracking-[0.25rem]'
+                >
+                    {'empty'}
+                </p>
+            )
+        } else {
+            return contextCards.map((props, index) => (
+                <DraggableContextCard
+                    {...props}
+                    index={index}
+                    removeCard={
+                        () => props.key && removeFromContextCards(props.key)
+                    }
+                />
+            ));
+        }
+    }, [contextCards, removeFromContextCards]);
+
+    const onDragEnd = useCallback(({
+        destination,
+        source,
+    }: DropResult) => {
+        console.log(destination, source);
+
+        if (!destination || destination.droppableId !== 'contextDeck') {
+            return;
+        }
+
+        if (source.droppableId === 'contextDeck') {
+            reorderContextCards(source.index, destination.index);
+        } else if (source.droppableId === 'queryDeck') {
+            const insertedCard = contextPreviewCards.at(source.index);
+            if (insertedCard) {
+                insertContextCard({
+                    ...insertedCard,
+                    key: `${insertedCard.context.id}-${contextCards.length + 1}`,
+                } as ContextCardProps);
+            }
+        }
+        console.log('drag completed')
+    }, [contextCards, contextPreviewCards, insertContextCard, reorderContextCards]);
+
+    return (
+        <DragDropContext onDragEnd={onDragEnd}>
+            <div className='flex flex-col h-screen w-screen items-center justify-center gap-4'>
+                <div className='flex flex-row items-center justify-center'>
+                    <Form className='flex' onSubmit={getSearchResults}>
+                        <CiSearch className='bg-white rounded-l-full py-2 pl-4 border-none text-5xl'/>
+                        <Form.Control
+                            ref={searchRef}
+                            bsPrefix='rounded-r-full w-96 py-2 px-4 border-none focus:outline-none'
+                            placeholder={'what do you want to listen to?'}
+                        />
+                    </Form>
+                </div>
+                <Droppable droppableId='queryDeck' direction='horizontal'>
+                    {(provided) => (
+                        <div
+                            {...provided.droppableProps}
+                            className='flex flex-row shadow-2xl shadow-[#42424220] gap-4 h-64 w-[80vw] items-center bg-black/20 rounded-2xl snap-mandatory snap-x overflow-x-auto px-4'
+                            ref={provided.innerRef}
+                        >
+                            {resultsDeck}
+                            {provided.placeholder}
+                        </div>
+                    )}
+                </Droppable>
                 <Droppable droppableId='contextDeck' direction='horizontal'>
                     {(provided) => (
                         <div
                             {...provided.droppableProps}
-                            ref={provided.innerRef}
                             className='flex flex-row shadow-2xl shadow-[#42424220] gap-4 h-96 w-[80vw] items-center bg-black/20 rounded-2xl snap-mandatory snap-x overflow-x-auto px-4'
+                            ref={provided.innerRef} 
                         >
-                            {
-                                contextCards.length === 0
-                                ? <p
-                                    className='m-0 text-center font-bold text-xl w-full text-[#5c5c5c] tracking-[0.25rem]'
-                                  >
-                                    {'empty'}
-                                  </p>
-                                : contextCards.map((props, index) => (
-                                    <DraggableContextCard
-                                        {...props}
-                                        index={index}
-                                        removeCard={
-                                            () => props.key && removeFromContextCards(props.key)
-                                        }
-                                    />
-                                ))
-                            }
+                            {contextDeck}
                             {provided.placeholder}
                         </div>
                     )}
                 </Droppable>
             </div>
-        )
-    }, [contextCards, removeFromContextCards])
-
-    return (
-        <div className='flex flex-col gap-16 items-center justify-center h-screen w-screen'>
-            <DragDropContext onDragEnd={onDragEnd(contextPreviewCards)}>
-                <div className='flex flex-col items-center justify-center gap-2'>
-                    <div className='flex flex-row items-center justify-center'>
-                        <Form className='flex' onSubmit={getSearchResults}>
-                            <CiSearch className='bg-white rounded-l-full py-2 pl-4 border-none text-5xl'/>
-                            
-                            <Form.Control
-                                ref={searchRef}
-                                bsPrefix='rounded-r-full w-96 py-2 px-4 border-none focus:outline-none'
-                                placeholder={'what do you want to listen to?'}
-                            />
-                        </Form>
-                    </div>
-                    {previewResultsLoader}
-                </div>
-                {contextDeck}
-            </DragDropContext>
-        </div>
+        </DragDropContext>
     );
 };

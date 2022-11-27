@@ -13,7 +13,7 @@ import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
 import { BsFillPlayFill, BsPauseFill, BsFillSkipStartFill, BsFillSkipEndFill } from 'react-icons/bs'
 import { ContextCardProps } from '../components/components';
-import { extractProminentColors } from '../common/common';
+import { extractProminentColors } from '../common';
 
 type WebPlayerPageInnerProps = {
     contextCards: ContextCardProps[],

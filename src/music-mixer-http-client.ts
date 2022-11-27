@@ -27,15 +27,14 @@ type RefreshToken = { refreshToken: string };
 export class MusicMixerHttpClient {
     static async getSpotifyAccessToken(authorizationCode: string): Promise<SpotifyAccessTokenResponse> {
         const response = await axios.post<AuthorizationCode, SpotifyAccessTokenResponse>(
-            '/login', { authorizationCode: authorizationCode }
+            '/api/login', { authorizationCode: authorizationCode }
         );
-        console.log(response)
         return response;
     }
 
     static async refreshSpotifyAccessToken(refreshToken: string): Promise<SpotifyRefreshTokenResponse> {
         const response = await axios.post<RefreshToken, SpotifyRefreshTokenResponse>(
-            '/refresh', { refreshToken: refreshToken }
+            '/api/refresh', { refreshToken: refreshToken }
         );
         return response;
     }

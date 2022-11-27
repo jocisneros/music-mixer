@@ -23,7 +23,6 @@ export const useSpotifyClient = (
             MusicMixerHttpClient
             .refreshSpotifyAccessToken(refreshToken)
             .then(response => {
-                console.log(response)
                 setAccessToken(response.data.access_token);
                 setExpiresIn(response.data.expires_in);
             })

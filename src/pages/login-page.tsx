@@ -1,8 +1,8 @@
 // login.tsx
 
-import MusicMixerLogo from '../logo.svg';
+import MusicMixerLogo from '../assets/music-mixer.svg';
 import Button from 'react-bootstrap/Button';
-import { SPOTIFY_AUTH_URL } from '../common/common';
+import { SPOTIFY_AUTH_URL } from '../common';
 
 
 export const LoginPage = () => {

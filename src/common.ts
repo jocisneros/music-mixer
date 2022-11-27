@@ -1,6 +1,31 @@
-// functions.ts
+// common.ts
 
 import { prominent } from 'color.js';
+
+// constants
+
+export const SPOTIFY_BASE_URL = 'https://accounts.spotify.com/';
+
+const SPOTIFY_SCOPE = [
+    'streaming',
+    'user-read-email',
+    'user-read-private',
+    'user-modify-playback-state',
+    'app-remote-control',
+    'user-read-currently-playing',
+    'user-read-playback-state',
+].join(' ');
+
+const spotifyQueryParameters = new URLSearchParams({
+    'response_type': 'code',
+    'client_id': import.meta.env.VITE_SPOTIFY_CLIENT_ID,
+    'scope': SPOTIFY_SCOPE,
+    'redirect_uri': import.meta.env.VITE_SPOTIFY_REDIRECT_URI,
+} as Record<string, string>);
+
+export const SPOTIFY_AUTH_URL = 'https://accounts.spotify.com/authorize?' + spotifyQueryParameters.toString();
+
+// functions
 
 export function generateRandomString(length: number): string {
     let text = '';

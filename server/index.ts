@@ -2,15 +2,13 @@
 
 import express from 'express';
 import request from 'request';
-import {
-    SPOTIFY_BASE_URL,
-    SPOTIFY_REDIRECT_URI,
-} from '../src/common/common';
 import dotenv from 'dotenv';
 dotenv.config();
 
+const TOKEN_URL = 'https://accounts.spotify.com/api/token';
+
 const AUTH_HEADER = 'Basic ' + Buffer.from(
-    `${process.env.REACT_APP_SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+    `${process.env.VITE_SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
 ).toString('base64');
 
 const port = 6000;
@@ -23,11 +21,11 @@ app.post('/login', (req, res) => {
 
     request.post(
         {
-            url: SPOTIFY_BASE_URL + 'api/token',
+            url: TOKEN_URL,
             form: {
                 grant_type: 'authorization_code',
                 code: authorizationCode,
-                redirect_uri: SPOTIFY_REDIRECT_URI,
+                redirect_uri: process.env.VITE_SPOTIFY_REDIRECT_URI,
             },
             headers: {
                 Authorization: AUTH_HEADER,
@@ -45,7 +43,7 @@ app.post('/refresh', (req, res) => {
 
     request.post(
         {
-            url: SPOTIFY_BASE_URL + 'api/token',
+            url: TOKEN_URL,
             form: {
                 grant_type: 'refresh_token',
                 refresh_token: refreshToken,

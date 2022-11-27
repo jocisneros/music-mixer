@@ -9,9 +9,8 @@ import { ContextCardProps, ContextPreviewCardProps } from './components/componen
 import { useSpotifyClient } from './hooks/useSpotifyClient';
 
 import Button from 'react-bootstrap/Button';
-import { BiArrowBack } from 'react-icons/bi'
-import { reorder } from './common/common';
-import MusicMixerLogo from './logo.svg';
+import { BiArrowBack } from 'react-icons/bi';
+import MusicMixerLogo from './assets/music-mixer.svg';
 
 
 type MusicMixerProps = {
@@ -42,34 +41,30 @@ export const MusicMixer = ({
             ));
     }, []);
 
-    const onDragEnd = useCallback((
-        previewCards: ContextPreviewCardProps[]
-    ) => {
-        return ({ destination, source }: DropResult) => {
-            if (!destination || destination.droppableId !== 'contextDeck') {
-                return;
-            }
+    const reorderContextCards = useCallback(
+        (startIndex: number, finalIndex: number) => {
+            setContextCards(prevCards => {
+                const newCards = Array.from(prevCards);
+                const [ removed ] = newCards.splice(startIndex, 1);
+                newCards.splice(finalIndex, 0, removed);
 
-            if (source.droppableId === 'contextDeck') {
-                setContextCards(items => reorder(items, source.index, destination.index));
-                return;
-            }
+                return newCards;
+            });
+    }, []);
 
-            if (source.droppableId === 'queryDeck') {
-                setContextCards(prevCards => {
-                    prevCards.splice(
-                        destination.index,
-                        0,
-                        {
-                            key: `${previewCards[source.index].key}-${prevCards.length + 1}`,
-                            ...previewCards[source.index]
-                        }
-                    )
-                    return prevCards;
-                });
-                return;
-            }
-        };
+    const insertContextCard = useCallback(
+        (contextCard: ContextCardProps, index?: number) => {
+            setContextCards(prevCards => {
+                const newCards = Array.from(prevCards);
+                newCards.splice(
+                    index !== undefined
+                    ? index
+                    : newCards.length,
+                    0,
+                    contextCard
+                );
+                return newCards;
+            });
     }, []);
 
     const backButton = useMemo(() => {
@@ -90,15 +85,14 @@ export const MusicMixer = ({
     
     return (
         <div className='flex flex-col h-screen w-screen items-center justify-center'>
-            <div className='flex flex-row w-screen justify-between pt-2 pb-2'>
-                <div className='flex pl-4'>{backButton}</div>
+            <div className='absolute flex w-full items-center justify-center top-2'>
+                <div className='absolute left-2'>{backButton}</div>
                 <div className='flex justify-center items-center'>
                     <img className='w-10' src={MusicMixerLogo} alt='music mixer logo' />
                     <div className='text-white font-semibold text-2xl tracking-wide'>
                         {'music mixer'}
                     </div>
                 </div>
-                <div className='w-20'></div>
             </div>
             <Routes>
                 <Route
@@ -111,11 +105,12 @@ export const MusicMixer = ({
                         <SelectionPage
                             contextCards={contextCards}
                             removeFromContextCards={removeFromContextCards}
-                            onDragEnd={onDragEnd}
                             redirectTo={redirectTo}
                             search={spotify.search}
                             getUser={spotify.getUser}
                             getArtist={spotify.getArtist}
+                            reorderContextCards={reorderContextCards}
+                            insertContextCard={insertContextCard}
                         />
                     }
                 />
