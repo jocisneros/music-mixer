@@ -16,7 +16,7 @@ SPOTIFY_CLIENT_SECRET = <CLIENT SECRET>
 run in command-line
 
 ```
-$ git clone <THIS REPO>
+$ git clone https://github.com/jocisneros/music-mixer.git
 $ cd music-mixer
 $ npm i
 $ npm run serve
