@@ -1,6 +1,26 @@
 # music-mixer
 
 ## a card-based music mixing web-application
+#### built using react, typescript, express, vite
+
+## installation + run
+
+register application on [spotify developer portal](https://developer.spotify.com/dashboard/)
+
+create a .env file with the following fields
+```
+VITE_SPOTIFY_REDIRECT_URI = <REDIRECT URI>
+VITE_SPOTIFY_CLIENT_ID = <CLIENT ID>
+SPOTIFY_CLIENT_SECRET = <CLIENT SECRET>
+```
+run in command-line
+
+```
+$ git clone <THIS REPO>
+$ cd music-mixer
+$ npm i
+$ npm run serve
+```
 
 ### login page
 <img width="1511" alt="image" src="https://user-images.githubusercontent.com/33441935/204133290-77af49d1-2010-4f42-93a1-0cd8e035f35a.png">
@@ -20,12 +40,3 @@
 
 <img width="330" alt="image" src="https://user-images.githubusercontent.com/33441935/204133784-347d30a1-a9c1-4b74-bd31-83fa85629d64.png">
 </p>
-
-## installation
-
-```
-git clone <>
-cd music-mixer
-npm i
-npm run serve
-```
