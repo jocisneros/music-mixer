@@ -17,6 +17,7 @@ export const ContextPreviewCard = ({
 }: ContextPreviewCardProps) => {
     const ownerName = useMemo(() => {
         if ('artists' in context) {
+            // @ts-ignore
             return context.artists[0].name;
         }
 
