@@ -17,11 +17,12 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
 
     const body = `grant_type=refresh_token&refresh_token=${refreshToken}`;
 
-    return axios.post(
-        'https://accounts.spotify.com/api/token',
-        body, { headers: {
+    return axios.post('https://accounts.spotify.com/api/token', body, {
+        headers: {
             'Authorization': AUTH_HEADER,
             'Content-Type': 'application/x-www-form-urlencoded'
         }
-    });
+    }).then(
+        response => JSON.stringify(response.data)
+    ).catch(error => ({ statusCode: 422, body: `Error ${error}`}))
 }
