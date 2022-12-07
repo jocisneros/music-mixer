@@ -1,33 +1,32 @@
 // login.ts
 
 import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
-import axios, { AxiosResponse } from 'axios';
-import { AccessTokenResponse, SpotifyAuthHeader } from '../constants';
+import { SpotifyAuthHeader, SpotifyTokenURL } from '../constants';
+import fetch from 'node-fetch';
 
 type LoginData = {
     authorizationCode: string,
 }
 
-type TokenResponse = AxiosResponse<AccessTokenResponse>
 
 export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
     try {
         const { authorizationCode } = (JSON.parse(event.body || '') as LoginData);
 
-        const body = `grant_type=authorization_code&code=${authorizationCode}` +
-                     `&redirect_uri=${process.env.VITE_SPOTIFY_REDIRECT_URI}`;
-
-        const response = await axios.post<any, TokenResponse>('https://accounts.spotify.com/api/token', body, {
+        const response = await fetch(SpotifyTokenURL, {
+            method: 'POST',
             headers: {
                 'Authorization': SpotifyAuthHeader,
                 'Content-Type': 'application/x-www-form-urlencoded'
-            }
+            },
+            body: `grant_type=authorization_code&code=${authorizationCode}&redirect_uri=${process.env.VITE_SPOTIFY_REDIRECT_URI}`
         });
 
-        console.log(response)
+        const data = await response.json();
+
         return {
             statusCode: 200,
-            body: JSON.stringify(response.data)
+            body: JSON.stringify(data)
         };
     } catch (error) {
         return {

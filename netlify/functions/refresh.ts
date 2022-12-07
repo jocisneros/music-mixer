@@ -2,13 +2,11 @@
 
 import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
 import axios, { AxiosHeaders, AxiosResponse } from 'axios';
-import { AccessTokenResponse, SpotifyAuthHeader } from '../constants';
+import { SpotifyAuthHeader, SpotifyTokenURL } from '../constants';
 
 type RefreshData = {
     refreshToken: string,
 }
-
-type RefreshTokenResponse = AxiosResponse<Omit<AccessTokenResponse, 'refresh_token'>>
 
 // @ts-ignore
 export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
@@ -16,7 +14,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
 
     const body = `grant_type=refresh_token&refresh_token=${refreshToken}`;
 
-    return axios.post('https://accounts.spotify.com/api/token', body, {
+    return axios.post(SpotifyTokenURL, body, {
         headers: {
             'Authorization': SpotifyAuthHeader,
             'Content-Type': 'application/x-www-form-urlencoded'
