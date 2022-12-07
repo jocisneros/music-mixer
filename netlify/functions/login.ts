@@ -8,7 +8,6 @@ type LoginData = {
     authorizationCode: string,
 }
 
-
 export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
     try {
         const { authorizationCode } = (JSON.parse(event.body || '') as LoginData);
