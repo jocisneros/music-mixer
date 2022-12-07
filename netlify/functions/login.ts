@@ -21,13 +21,14 @@ const AUTH_HEADER = 'Basic ' + Buffer.from(
 
 // @ts-ignore
 export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
-    const { authorizationCode } = (JSON.parse(event.body || '') as LoginData)
+    const { authorizationCode } = (JSON.parse(event.body || '') as LoginData);
 
-    return axios.post<any, AccessTokenResponse>('https://accounts.spotify.com/api/token', {
-        'grant_type': 'authorization_code',
-        'refresh_token': authorizationCode,
-        'redirect_uri': process.env.VITE_SPOTIFY_REDIRECT_URI
-    }, { headers: {
+    const body = `grant_type=authorization_code&code=${authorizationCode}` +
+                 `&redirect_uri=${process.env.VITE_SPOTIFY_REDIRECT_URI}`;
+
+    return axios.post<any, AccessTokenResponse>(
+        'https://accounts.spotify.com/api/token',
+        body, { headers: {
             'Authorization': AUTH_HEADER,
             'Content-Type': 'application/x-www-form-urlencoded'
         }

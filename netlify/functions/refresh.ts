@@ -20,12 +20,13 @@ const AUTH_HEADER = 'Basic ' + Buffer.from(
 
 // @ts-ignore
 export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
-    const { refreshToken } = (JSON.parse(event.body || '') as RefreshData)
+    const { refreshToken } = (JSON.parse(event.body || '') as RefreshData);
 
-    return axios.post<any, RefreshedTokenResponse>('https://accounts.spotify.com/api/token', {
-        'grant_type': 'refresh_token',
-        'refresh_token': refreshToken
-    }, { headers: {
+    const body = `grant_type=refresh_token&refresh_token=${refreshToken}`;
+
+    return axios.post<any, RefreshedTokenResponse>(
+        'https://accounts.spotify.com/api/token',
+        body, { headers: {
             'Authorization': AUTH_HEADER,
             'Content-Type': 'application/x-www-form-urlencoded'
         }
