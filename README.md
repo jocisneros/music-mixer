@@ -1,6 +1,8 @@
 # music-mixer
 
 ## a card-based music mixing web-application
+
+### try @ https://music-mixer.netlify.app
 #### built using react, typescript, express, vite
 
 ## installation + run
