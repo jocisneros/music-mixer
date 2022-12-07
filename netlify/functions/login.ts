@@ -2,14 +2,13 @@
 
 import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
 import axios, { AxiosResponse } from 'axios';
+import { AccessTokenResponse, SpotifyAuthHeader } from '../constants';
 
 type LoginData = {
     authorizationCode: string,
 }
 
-const AUTH_HEADER = 'Basic ' + Buffer.from(
-    `${process.env.VITE_SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
-).toString('base64');
+type TokenResponse = AxiosResponse<AccessTokenResponse>
 
 export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
     try {
@@ -18,13 +17,14 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
         const body = `grant_type=authorization_code&code=${authorizationCode}` +
                      `&redirect_uri=${process.env.VITE_SPOTIFY_REDIRECT_URI}`;
 
-        const response = await axios.post('https://accounts.spotify.com/api/token', body, {
+        const response = await axios.post<any, TokenResponse>('https://accounts.spotify.com/api/token', body, {
             headers: {
-                'Authorization': AUTH_HEADER,
+                'Authorization': SpotifyAuthHeader,
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
         });
 
+        console.log(response)
         return {
             statusCode: 200,
             body: JSON.stringify(response.data)
