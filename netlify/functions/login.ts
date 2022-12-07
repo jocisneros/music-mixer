@@ -24,6 +24,6 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
             'Content-Type': 'application/x-www-form-urlencoded'
         }
     }).then(
-        response => JSON.stringify(response.data)
+        response => JSON.stringify(response)
     ).catch(error => ({ statusCode: 422, body: `Error ${error}`}))
 }
