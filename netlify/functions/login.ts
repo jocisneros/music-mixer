@@ -18,11 +18,13 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     const body = `grant_type=authorization_code&code=${authorizationCode}` +
                  `&redirect_uri=${process.env.VITE_SPOTIFY_REDIRECT_URI}`;
 
-    return axios.post(
+    const response = await axios.post(
         'https://accounts.spotify.com/api/token',
         body, { headers: {
             'Authorization': AUTH_HEADER,
             'Content-Type': 'application/x-www-form-urlencoded'
         }
     });
+    console.log(response)
+    return response
 }
