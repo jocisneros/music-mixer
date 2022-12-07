@@ -7,13 +7,6 @@ type RefreshData = {
     refreshToken: string,
 }
 
-type RefreshedTokenResponse = AxiosResponse<{
-    access_token: string,
-    token_type: string,
-    scope: string,
-    expires_in: number,
-}>
-
 const AUTH_HEADER = 'Basic ' + Buffer.from(
     `${process.env.VITE_SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
 ).toString('base64');
@@ -24,7 +17,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
 
     const body = `grant_type=refresh_token&refresh_token=${refreshToken}`;
 
-    return axios.post<any, RefreshedTokenResponse>(
+    return axios.post(
         'https://accounts.spotify.com/api/token',
         body, { headers: {
             'Authorization': AUTH_HEADER,

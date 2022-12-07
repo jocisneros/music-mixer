@@ -7,14 +7,6 @@ type LoginData = {
     authorizationCode: string,
 }
 
-type AccessTokenResponse = AxiosResponse<{
-    access_token: string,
-    token_type: string,
-    scope: string,
-    expires_in: number,
-    refresh_token: string,
-}>
-
 const AUTH_HEADER = 'Basic ' + Buffer.from(
     `${process.env.VITE_SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
 ).toString('base64');
@@ -26,7 +18,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     const body = `grant_type=authorization_code&code=${authorizationCode}` +
                  `&redirect_uri=${process.env.VITE_SPOTIFY_REDIRECT_URI}`;
 
-    return axios.post<any, AccessTokenResponse>(
+    return axios.post(
         'https://accounts.spotify.com/api/token',
         body, { headers: {
             'Authorization': AUTH_HEADER,
